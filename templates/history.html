@@ -38,6 +38,8 @@
                                         <i class="fab fa-facebook me-1"></i>Facebook
                                     {% elif item.platform == 'twitter' %}
                                         <i class="fab fa-twitter me-1"></i>Twitter/X
+                                    {% elif item.platform == 'youtube' %}
+                                        <i class="fab fa-youtube me-1"></i>YouTube
                                     {% else %}
                                         <i class="fas fa-globe me-1"></i>{{ item.platform.title() }}
                                     {% endif %}

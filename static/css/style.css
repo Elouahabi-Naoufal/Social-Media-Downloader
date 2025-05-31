@@ -238,6 +238,11 @@ body {
     color: white;
 }
 
+.platform-badge.platform-youtube {
+    background: linear-gradient(45deg, #FF0000, #CC0000);
+    color: white;
+}
+
 /* Loading Overlay */
 .loading-overlay {
     position: fixed;
