@@ -206,6 +206,7 @@ body {
 .platform-icon.tiktok { color: #000000; }
 .platform-icon.facebook { color: #1877F2; }
 .platform-icon.twitter { color: #1DA1F2; }
+.platform-icon.youtube { color: #FF0000; }
 
 [data-theme="dark"] .platform-icon.tiktok { color: #FFFFFF; }
 
