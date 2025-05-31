@@ -1,0 +1,294 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-lg-8 col-xl-6">
+        <!-- Hero Section -->
+        <div class="hero-section text-center mb-5">
+            <div class="hero-icon mb-4">
+                <i class="fas fa-cloud-download-alt"></i>
+            </div>
+            <h1 class="display-4 fw-bold mb-3">Download Social Media Content</h1>
+            <p class="lead text-muted">
+                Easily download videos and images from Instagram, TikTok, Facebook, and Twitter
+            </p>
+        </div>
+
+        <!-- Download Form -->
+        <div class="card download-card shadow-lg">
+            <div class="card-body p-4">
+                <form id="downloadForm">
+                    <!-- URL Input -->
+                    <div class="mb-4">
+                        <label for="urlInput" class="form-label fw-semibold">
+                            <i class="fas fa-link me-2"></i>Social Media URL
+                        </label>
+                        <div class="input-group">
+                            <input 
+                                type="url" 
+                                class="form-control form-control-lg" 
+                                id="urlInput" 
+                                placeholder="Paste Instagram, TikTok, Facebook, or Twitter URL here..."
+                                required
+                            >
+                            <button class="btn btn-outline-secondary" type="button" id="validateBtn">
+                                <i class="fas fa-check"></i>
+                            </button>
+                        </div>
+                        <div class="invalid-feedback" id="urlError"></div>
+                        <div class="valid-feedback" id="urlSuccess"></div>
+                    </div>
+
+                    <!-- Platform Selector -->
+                    <div class="mb-4">
+                        <label for="platformSelect" class="form-label fw-semibold">
+                            <i class="fas fa-globe me-2"></i>Platform
+                        </label>
+                        <select class="form-select" id="platformSelect">
+                            <option value="">Auto-detect platform</option>
+                            <option value="instagram">
+                                <i class="fab fa-instagram"></i> Instagram
+                            </option>
+                            <option value="tiktok">
+                                <i class="fab fa-tiktok"></i> TikTok
+                            </option>
+                            <option value="facebook">
+                                <i class="fab fa-facebook"></i> Facebook
+                            </option>
+                            <option value="twitter">
+                                <i class="fab fa-twitter"></i> Twitter/X
+                            </option>
+                        </select>
+                    </div>
+
+                    <!-- Download Button -->
+                    <div class="text-center">
+                        <button type="submit" class="btn btn-primary btn-lg download-btn" id="downloadBtn">
+                            <i class="fas fa-download me-2"></i>
+                            <span>Download Media</span>
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <!-- Results Section -->
+        <div class="card result-card shadow-lg mt-4" id="resultCard" style="display: none;">
+            <div class="card-body p-4">
+                <h5 class="card-title">
+                    <i class="fas fa-check-circle text-success me-2"></i>
+                    Download Complete
+                </h5>
+                <div id="resultContent">
+                    <!-- Results will be populated here -->
+                </div>
+            </div>
+        </div>
+
+        <!-- Platform Support Info -->
+        <div class="platform-info mt-5">
+            <h4 class="text-center mb-4">Supported Platforms</h4>
+            <div class="row g-3">
+                <div class="col-6 col-md-3">
+                    <div class="platform-card text-center p-3">
+                        <i class="fab fa-instagram platform-icon instagram"></i>
+                        <h6 class="mt-2 mb-0">Instagram</h6>
+                        <small class="text-muted">Photos & Videos</small>
+                    </div>
+                </div>
+                <div class="col-6 col-md-3">
+                    <div class="platform-card text-center p-3">
+                        <i class="fab fa-tiktok platform-icon tiktok"></i>
+                        <h6 class="mt-2 mb-0">TikTok</h6>
+                        <small class="text-muted">Short Videos</small>
+                    </div>
+                </div>
+                <div class="col-6 col-md-3">
+                    <div class="platform-card text-center p-3">
+                        <i class="fab fa-facebook platform-icon facebook"></i>
+                        <h6 class="mt-2 mb-0">Facebook</h6>
+                        <small class="text-muted">Videos & Images</small>
+                    </div>
+                </div>
+                <div class="col-6 col-md-3">
+                    <div class="platform-card text-center p-3">
+                        <i class="fab fa-twitter platform-icon twitter"></i>
+                        <h6 class="mt-2 mb-0">Twitter/X</h6>
+                        <small class="text-muted">Media Content</small>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_scripts %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const form = document.getElementById('downloadForm');
+    const urlInput = document.getElementById('urlInput');
+    const validateBtn = document.getElementById('validateBtn');
+    const platformSelect = document.getElementById('platformSelect');
+    const downloadBtn = document.getElementById('downloadBtn');
+    const resultCard = document.getElementById('resultCard');
+    const resultContent = document.getElementById('resultContent');
+    const urlError = document.getElementById('urlError');
+    const urlSuccess = document.getElementById('urlSuccess');
+
+    // URL validation
+    validateBtn.addEventListener('click', function() {
+        validateUrl();
+    });
+
+    urlInput.addEventListener('input', function() {
+        // Reset validation state
+        urlInput.classList.remove('is-valid', 'is-invalid');
+        urlError.textContent = '';
+        urlSuccess.textContent = '';
+        resultCard.style.display = 'none';
+    });
+
+    function validateUrl() {
+        const url = urlInput.value.trim();
+        
+        if (!url) {
+            showUrlError('Please enter a URL');
+            return;
+        }
+
+        showLoading();
+
+        fetch('/validate-url', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({ url: url })
+        })
+        .then(response => response.json())
+        .then(data => {
+            hideLoading();
+            
+            if (data.valid) {
+                showUrlSuccess('Valid URL detected');
+                if (data.platform) {
+                    platformSelect.value = data.platform;
+                    showPlatformDetected(data.platform);
+                }
+            } else {
+                showUrlError(data.error);
+            }
+        })
+        .catch(error => {
+            hideLoading();
+            showUrlError('Validation failed. Please check your connection.');
+        });
+    }
+
+    function showUrlError(message) {
+        urlInput.classList.remove('is-valid');
+        urlInput.classList.add('is-invalid');
+        urlError.textContent = message;
+        urlSuccess.textContent = '';
+    }
+
+    function showUrlSuccess(message) {
+        urlInput.classList.remove('is-invalid');
+        urlInput.classList.add('is-valid');
+        urlSuccess.textContent = message;
+        urlError.textContent = '';
+    }
+
+    function showPlatformDetected(platform) {
+        const platformName = platform.charAt(0).toUpperCase() + platform.slice(1);
+        showNotification(`Platform detected: ${platformName}`, 'success');
+    }
+
+    // Form submission
+    form.addEventListener('submit', function(e) {
+        e.preventDefault();
+        
+        const url = urlInput.value.trim();
+        const platform = platformSelect.value;
+
+        if (!url) {
+            showUrlError('Please enter a URL');
+            return;
+        }
+
+        downloadMedia(url, platform);
+    });
+
+    function downloadMedia(url, platform) {
+        showLoading('Downloading media...');
+        
+        // Disable form
+        downloadBtn.disabled = true;
+        downloadBtn.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i>Downloading...';
+
+        fetch('/download', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({ 
+                url: url,
+                platform: platform 
+            })
+        })
+        .then(response => response.json())
+        .then(data => {
+            hideLoading();
+            
+            if (data.success) {
+                showDownloadResult(data);
+                showNotification('Download completed successfully!', 'success');
+            } else {
+                showNotification(data.error, 'error');
+            }
+        })
+        .catch(error => {
+            hideLoading();
+            showNotification('Download failed. Please try again.', 'error');
+        })
+        .finally(() => {
+            // Re-enable form
+            downloadBtn.disabled = false;
+            downloadBtn.innerHTML = '<i class="fas fa-download me-2"></i>Download Media';
+        });
+    }
+
+    function showDownloadResult(data) {
+        const fileSize = formatFileSize(data.file_size);
+        const mediaIcon = data.media_type === 'video' ? 'fas fa-video' : 'fas fa-image';
+        
+        resultContent.innerHTML = `
+            <div class="d-flex align-items-center justify-content-between">
+                <div class="d-flex align-items-center">
+                    <i class="${mediaIcon} text-primary me-3 fs-4"></i>
+                    <div>
+                        <h6 class="mb-1">${data.filename}</h6>
+                        <small class="text-muted">${fileSize} • ${data.media_type}</small>
+                    </div>
+                </div>
+                <a href="${data.download_url}" class="btn btn-success btn-sm">
+                    <i class="fas fa-download me-1"></i>Download
+                </a>
+            </div>
+        `;
+        
+        resultCard.style.display = 'block';
+        resultCard.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    }
+
+    function formatFileSize(bytes) {
+        if (bytes === 0) return '0 Bytes';
+        const k = 1024;
+        const sizes = ['Bytes', 'KB', 'MB', 'GB'];
+        const i = Math.floor(Math.log(bytes) / Math.log(k));
+        return parseFloat((bytes / Math.pow(k, i)).toFixed(1)) + ' ' + sizes[i];
+    }
+});
+</script>
+{% endblock %}
