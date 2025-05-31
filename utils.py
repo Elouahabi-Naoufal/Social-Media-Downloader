@@ -68,85 +68,116 @@ def detect_platform(url):
         return None
 
 def download_media(url, platform):
-    """Download media using social-media-downloader package"""
+    """Download media using yt-dlp"""
     try:
-        from social_media_downloader import Downloader
+        import yt_dlp
         
         # Create downloads directory if it doesn't exist
         downloads_dir = 'downloads'
         os.makedirs(downloads_dir, exist_ok=True)
         
-        # Initialize the downloader
-        downloader = Downloader()
-        
-        # Get media information
-        info = downloader.get_info(url)
-        
-        if not info or not hasattr(info, 'download_url'):
-            return {
-                'success': False,
-                'error': 'Could not extract media information from this URL'
-            }
-        
-        media_url = info.download_url
-        
-        # Determine file extension and media type
-        if hasattr(info, 'ext') and info.ext:
-            file_ext = info.ext if info.ext.startswith('.') else f'.{info.ext}'
-        else:
-            # Try to determine from URL or default to mp4
-            if any(ext in media_url.lower() for ext in ['.jpg', '.jpeg', '.png', '.gif']):
-                file_ext = '.jpg'
-            else:
-                file_ext = '.mp4'
-        
-        # Generate filename
+        # Generate base filename
         timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
         url_hash = str(hash(url))[-6:]
+        base_filename = f"{platform}_{timestamp}_{url_hash}"
         
-        if hasattr(info, 'title') and info.title:
-            # Clean the title for filename
-            clean_title = re.sub(r'[^\w\s-]', '', info.title)[:30]
-            clean_title = re.sub(r'[-\s]+', '_', clean_title)
-            filename = f"{platform}_{timestamp}_{clean_title}_{url_hash}{file_ext}"
-        else:
-            filename = f"{platform}_{timestamp}_{url_hash}{file_ext}"
+        # Configure yt-dlp options
+        ydl_opts = {
+            'outtmpl': os.path.join(downloads_dir, f'{base_filename}.%(ext)s'),
+            'format': 'best[height<=720]/best',  # Download best quality up to 720p
+            'writeinfojson': False,
+            'writesubtitles': False,
+            'writeautomaticsub': False,
+            'ignoreerrors': False,
+            'no_warnings': False,
+            'extractaudio': False,
+            'audioformat': 'mp3',
+            'audioquality': '192',
+        }
         
-        file_path = os.path.join(downloads_dir, filename)
+        # Extract information first
+        with yt_dlp.YoutubeDL({'quiet': True}) as ydl:
+            try:
+                info = ydl.extract_info(url, download=False)
+            except Exception as e:
+                return {
+                    'success': False,
+                    'error': f'Could not extract media information: {str(e)}'
+                }
         
-        # Download the actual media file
-        response = requests.get(media_url, stream=True, timeout=30)
-        response.raise_for_status()
+        if not info:
+            return {
+                'success': False,
+                'error': 'No media information found for this URL'
+            }
         
-        with open(file_path, 'wb') as f:
-            for chunk in response.iter_content(chunk_size=8192):
-                if chunk:
-                    f.write(chunk)
+        # Get media details
+        title = info.get('title', 'Unknown')
+        duration = info.get('duration')
+        ext = info.get('ext', 'mp4')
+        
+        # Clean title for filename
+        clean_title = re.sub(r'[^\w\s-]', '', title)[:30]
+        clean_title = re.sub(r'[-\s]+', '_', clean_title)
+        
+        # Update filename with clean title
+        final_filename = f"{platform}_{timestamp}_{clean_title}_{url_hash}.{ext}"
+        ydl_opts['outtmpl'] = os.path.join(downloads_dir, final_filename)
+        
+        # Download the media
+        with yt_dlp.YoutubeDL(ydl_opts) as ydl:
+            try:
+                ydl.download([url])
+            except Exception as e:
+                return {
+                    'success': False,
+                    'error': f'Download failed: {str(e)}'
+                }
+        
+        file_path = os.path.join(downloads_dir, final_filename)
+        
+        # Check if file was downloaded
+        if not os.path.exists(file_path):
+            # Sometimes yt-dlp changes the extension, look for any file with our base name
+            for file in os.listdir(downloads_dir):
+                if file.startswith(f"{platform}_{timestamp}_{clean_title}_{url_hash}"):
+                    file_path = os.path.join(downloads_dir, file)
+                    final_filename = file
+                    break
+            else:
+                return {
+                    'success': False,
+                    'error': 'Download completed but file not found'
+                }
         
         file_size = os.path.getsize(file_path)
         
-        # Determine media type
-        media_type = 'image' if file_ext.lower() in ['.jpg', '.jpeg', '.png', '.gif'] else 'video'
+        # Determine media type based on file extension
+        video_extensions = ['.mp4', '.avi', '.mkv', '.webm', '.mov', '.flv', '.wmv']
+        image_extensions = ['.jpg', '.jpeg', '.png', '.gif', '.bmp', '.webp']
+        
+        file_ext = os.path.splitext(final_filename)[1].lower()
+        if file_ext in video_extensions:
+            media_type = 'video'
+        elif file_ext in image_extensions:
+            media_type = 'image'
+        else:
+            media_type = 'video'  # Default to video
         
         return {
             'success': True,
-            'filename': filename,
+            'filename': final_filename,
             'file_path': file_path,
             'file_size': file_size,
             'media_type': media_type,
-            'title': getattr(info, 'title', None),
-            'duration': getattr(info, 'duration', None)
+            'title': title,
+            'duration': duration
         }
         
     except ImportError:
         return {
             'success': False,
-            'error': 'Social media downloader package not properly installed'
-        }
-    except requests.RequestException as e:
-        return {
-            'success': False,
-            'error': f'Failed to download media file: {str(e)}'
+            'error': 'Media downloader not available. Please contact support.'
         }
     except Exception as e:
         return {
