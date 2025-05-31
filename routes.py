@@ -86,13 +86,21 @@ def download():
             db.session.add(history_item)
             db.session.commit()
             
-            return jsonify({
+            response_data = {
                 'success': True,
                 'filename': result['filename'],
                 'file_size': result['file_size'],
                 'media_type': result['media_type'],
                 'download_url': url_for('download_file', filename=result['filename'])
-            })
+            }
+            
+            # Add optional fields if available
+            if result.get('title'):
+                response_data['title'] = result['title']
+            if result.get('duration'):
+                response_data['duration'] = result['duration']
+                
+            return jsonify(response_data)
         else:
             return jsonify({'success': False, 'error': result['error']})
             

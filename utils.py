@@ -70,79 +70,88 @@ def detect_platform(url):
 def download_media(url, platform):
     """Download media using social-media-downloader package"""
     try:
+        from social_media_downloader import Downloader
+        
         # Create downloads directory if it doesn't exist
         downloads_dir = 'downloads'
         os.makedirs(downloads_dir, exist_ok=True)
         
-        # For now, we'll simulate the download process since social-media-downloader
-        # might not be available. In production, you would use:
-        # from social_media_downloader import SocialMediaDownloader
-        # downloader = SocialMediaDownloader()
-        # result = downloader.download(url, platform)
+        # Initialize the downloader
+        downloader = Downloader()
         
-        # Simulate download with a placeholder approach
-        # In real implementation, replace this with actual social-media-downloader usage
-        try:
-            # Try to get basic info about the URL
-            response = requests.head(url, timeout=10)
-            content_type = response.headers.get('content-type', '')
-            
-            # Generate filename based on URL and timestamp
-            timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
-            url_hash = str(hash(url))[-6:]  # Last 6 digits of hash
-            
-            if 'video' in content_type:
-                filename = f"{platform}_{timestamp}_{url_hash}.mp4"
-                media_type = 'video'
-            elif 'image' in content_type:
-                filename = f"{platform}_{timestamp}_{url_hash}.jpg"
-                media_type = 'image'
+        # Get media information
+        info = downloader.get_info(url)
+        
+        if not info or not hasattr(info, 'download_url'):
+            return {
+                'success': False,
+                'error': 'Could not extract media information from this URL'
+            }
+        
+        media_url = info.download_url
+        
+        # Determine file extension and media type
+        if hasattr(info, 'ext') and info.ext:
+            file_ext = info.ext if info.ext.startswith('.') else f'.{info.ext}'
+        else:
+            # Try to determine from URL or default to mp4
+            if any(ext in media_url.lower() for ext in ['.jpg', '.jpeg', '.png', '.gif']):
+                file_ext = '.jpg'
             else:
-                filename = f"{platform}_{timestamp}_{url_hash}.mp4"
-                media_type = 'video'  # Default to video
-            
-            file_path = os.path.join(downloads_dir, filename)
-            
-            # Create a placeholder file (in production, this would be the actual download)
-            placeholder_content = f"Media downloaded from {url} on {datetime.now()}\nPlatform: {platform}\n"
-            with open(file_path, 'w') as f:
-                f.write(placeholder_content)
-            
-            file_size = os.path.getsize(file_path)
-            
-            return {
-                'success': True,
-                'filename': filename,
-                'file_path': file_path,
-                'file_size': file_size,
-                'media_type': media_type
-            }
-            
-        except requests.RequestException:
-            # If URL is not accessible, still create a placeholder
-            timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
-            url_hash = str(hash(url))[-6:]
-            filename = f"{platform}_{timestamp}_{url_hash}.mp4"
-            file_path = os.path.join(downloads_dir, filename)
-            
-            placeholder_content = f"Media from {url}\nPlatform: {platform}\nDownloaded: {datetime.now()}\n"
-            with open(file_path, 'w') as f:
-                f.write(placeholder_content)
-            
-            file_size = os.path.getsize(file_path)
-            
-            return {
-                'success': True,
-                'filename': filename,
-                'file_path': file_path,
-                'file_size': file_size,
-                'media_type': 'video'
-            }
-            
+                file_ext = '.mp4'
+        
+        # Generate filename
+        timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+        url_hash = str(hash(url))[-6:]
+        
+        if hasattr(info, 'title') and info.title:
+            # Clean the title for filename
+            clean_title = re.sub(r'[^\w\s-]', '', info.title)[:30]
+            clean_title = re.sub(r'[-\s]+', '_', clean_title)
+            filename = f"{platform}_{timestamp}_{clean_title}_{url_hash}{file_ext}"
+        else:
+            filename = f"{platform}_{timestamp}_{url_hash}{file_ext}"
+        
+        file_path = os.path.join(downloads_dir, filename)
+        
+        # Download the actual media file
+        response = requests.get(media_url, stream=True, timeout=30)
+        response.raise_for_status()
+        
+        with open(file_path, 'wb') as f:
+            for chunk in response.iter_content(chunk_size=8192):
+                if chunk:
+                    f.write(chunk)
+        
+        file_size = os.path.getsize(file_path)
+        
+        # Determine media type
+        media_type = 'image' if file_ext.lower() in ['.jpg', '.jpeg', '.png', '.gif'] else 'video'
+        
+        return {
+            'success': True,
+            'filename': filename,
+            'file_path': file_path,
+            'file_size': file_size,
+            'media_type': media_type,
+            'title': getattr(info, 'title', None),
+            'duration': getattr(info, 'duration', None)
+        }
+        
+    except ImportError:
+        return {
+            'success': False,
+            'error': 'Social media downloader package not properly installed'
+        }
+    except requests.RequestException as e:
+        return {
+            'success': False,
+            'error': f'Failed to download media file: {str(e)}'
+        }
     except Exception as e:
         return {
             'success': False,
-            'error': f"Download failed: {str(e)}"
+            'error': f'Download failed: {str(e)}'
         }
 
 def get_file_info(file_path):

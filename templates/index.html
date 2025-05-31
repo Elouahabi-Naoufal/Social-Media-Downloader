@@ -263,13 +263,23 @@ document.addEventListener('DOMContentLoaded', function() {
         const fileSize = formatFileSize(data.file_size);
         const mediaIcon = data.media_type === 'video' ? 'fas fa-video' : 'fas fa-image';
         
+        let mediaInfo = `${fileSize} • ${data.media_type}`;
+        if (data.duration) {
+            const duration = formatDuration(data.duration);
+            mediaInfo += ` • ${duration}`;
+        }
+        
+        const title = data.title ? data.title : data.filename;
+        const displayTitle = title.length > 40 ? title.substring(0, 40) + '...' : title;
+        
         resultContent.innerHTML = `
             <div class="d-flex align-items-center justify-content-between">
-                <div class="d-flex align-items-center">
+                <div class="d-flex align-items-center flex-grow-1 me-3">
                     <i class="${mediaIcon} text-primary me-3 fs-4"></i>
-                    <div>
-                        <h6 class="mb-1">${data.filename}</h6>
-                        <small class="text-muted">${fileSize} • ${data.media_type}</small>
+                    <div class="flex-grow-1">
+                        <h6 class="mb-1" title="${title}">${displayTitle}</h6>
+                        <small class="text-muted">${mediaInfo}</small>
+                        ${data.title ? `<div><small class="text-muted">File: ${data.filename}</small></div>` : ''}
                     </div>
                 </div>
                 <a href="${data.download_url}" class="btn btn-success btn-sm">
@@ -280,6 +290,13 @@ document.addEventListener('DOMContentLoaded', function() {
         
         resultCard.style.display = 'block';
         resultCard.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    }
+
+    function formatDuration(seconds) {
+        if (!seconds) return '';
+        const mins = Math.floor(seconds / 60);
+        const secs = Math.floor(seconds % 60);
+        return `${mins}:${secs.toString().padStart(2, '0')}`;
     }
 
     function formatFileSize(bytes) {
