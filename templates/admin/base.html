@@ -1,0 +1,165 @@
+<!DOCTYPE html>
+<html lang="en" class="scroll-smooth">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}Admin Panel - Social Media Downloader{% endblock %}</title>
+    
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Chart.js -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        admin: {
+                            50: '#f0f9ff',
+                            100: '#e0f2fe',
+                            200: '#bae6fd',
+                            300: '#7dd3fc',
+                            400: '#38bdf8',
+                            500: '#0ea5e9',
+                            600: '#0284c7',
+                            700: '#0369a1',
+                            800: '#075985',
+                            900: '#0c4a6e'
+                        }
+                    },
+                    fontFamily: {
+                        'sans': ['Inter', 'system-ui', 'sans-serif']
+                    }
+                }
+            }
+        }
+    </script>
+    
+    {% block extra_head %}{% endblock %}
+</head>
+<body class="bg-gray-50 font-sans">
+    <!-- Sidebar -->
+    <div class="fixed inset-y-0 left-0 z-50 w-64 bg-white shadow-lg transform -translate-x-full lg:translate-x-0 transition-transform duration-300" id="sidebar">
+        <div class="flex items-center justify-center h-16 bg-gradient-to-r from-admin-600 to-admin-700">
+            <h1 class="text-white text-xl font-bold">
+                <i class="fas fa-shield-alt mr-2"></i>Admin Panel
+            </h1>
+        </div>
+        
+        <nav class="mt-8">
+            <div class="px-4 space-y-2">
+                <a href="{{ url_for('admin_dashboard') }}" class="flex items-center px-4 py-3 text-gray-700 rounded-lg hover:bg-admin-50 hover:text-admin-600 transition-colors duration-200 {% if request.endpoint == 'admin_dashboard' %}bg-admin-50 text-admin-600 border-r-2 border-admin-600{% endif %}">
+                    <i class="fas fa-tachometer-alt mr-3"></i>
+                    Dashboard
+                </a>
+                
+                <a href="{{ url_for('admin_downloads') }}" class="flex items-center px-4 py-3 text-gray-700 rounded-lg hover:bg-admin-50 hover:text-admin-600 transition-colors duration-200 {% if request.endpoint == 'admin_downloads' %}bg-admin-50 text-admin-600 border-r-2 border-admin-600{% endif %}">
+                    <i class="fas fa-download mr-3"></i>
+                    Downloads
+                </a>
+                
+                <a href="{{ url_for('admin_analytics') }}" class="flex items-center px-4 py-3 text-gray-700 rounded-lg hover:bg-admin-50 hover:text-admin-600 transition-colors duration-200 {% if request.endpoint == 'admin_analytics' %}bg-admin-50 text-admin-600 border-r-2 border-admin-600{% endif %}">
+                    <i class="fas fa-chart-line mr-3"></i>
+                    Analytics
+                </a>
+                
+                <a href="{{ url_for('admin_blog') }}" class="flex items-center px-4 py-3 text-gray-700 rounded-lg hover:bg-admin-50 hover:text-admin-600 transition-colors duration-200 {% if request.endpoint in ['admin_blog', 'admin_blog_new', 'admin_blog_edit'] %}bg-admin-50 text-admin-600 border-r-2 border-admin-600{% endif %}">
+                    <i class="fas fa-blog mr-3"></i>
+                    Blog
+                </a>
+                
+                <a href="{{ url_for('admin_settings') }}" class="flex items-center px-4 py-3 text-gray-700 rounded-lg hover:bg-admin-50 hover:text-admin-600 transition-colors duration-200 {% if request.endpoint == 'admin_settings' %}bg-admin-50 text-admin-600 border-r-2 border-admin-600{% endif %}">
+                    <i class="fas fa-cog mr-3"></i>
+                    Settings
+                </a>
+                
+                <div class="border-t border-gray-200 my-4"></div>
+                
+                <a href="{{ url_for('index') }}" class="flex items-center px-4 py-3 text-gray-700 rounded-lg hover:bg-gray-100 transition-colors duration-200" target="_blank">
+                    <i class="fas fa-external-link-alt mr-3"></i>
+                    View Site
+                </a>
+                
+                <a href="{{ url_for('admin_logout') }}" class="flex items-center px-4 py-3 text-red-600 rounded-lg hover:bg-red-50 transition-colors duration-200">
+                    <i class="fas fa-sign-out-alt mr-3"></i>
+                    Logout
+                </a>
+            </div>
+        </nav>
+    </div>
+
+    <!-- Main Content -->
+    <div class="lg:ml-64">
+        <!-- Top Bar -->
+        <header class="bg-white shadow-sm border-b border-gray-200">
+            <div class="flex items-center justify-between px-6 py-4">
+                <div class="flex items-center">
+                    <button class="lg:hidden text-gray-600 hover:text-gray-900" onclick="toggleSidebar()">
+                        <i class="fas fa-bars text-xl"></i>
+                    </button>
+                    <h2 class="ml-4 lg:ml-0 text-2xl font-semibold text-gray-800">
+                        {% block page_title %}Dashboard{% endblock %}
+                    </h2>
+                </div>
+                
+                <div class="flex items-center space-x-4">
+                    <div class="text-sm text-gray-600">
+                        Welcome, <span class="font-medium">{{ session.admin_username }}</span>
+                    </div>
+                    <div class="w-8 h-8 bg-admin-500 rounded-full flex items-center justify-center">
+                        <i class="fas fa-user text-white text-sm"></i>
+                    </div>
+                </div>
+            </div>
+        </header>
+
+        <!-- Page Content -->
+        <main class="p-6">
+            <!-- Flash Messages -->
+            {% with messages = get_flashed_messages(with_categories=true) %}
+                {% if messages %}
+                    <div class="mb-6">
+                        {% for category, message in messages %}
+                            <div class="mb-4 p-4 rounded-xl border-l-4 {% if category == 'error' %}bg-red-50 border-red-400 text-red-700{% elif category == 'success' %}bg-green-50 border-green-400 text-green-700{% else %}bg-blue-50 border-blue-400 text-blue-700{% endif %} shadow-lg">
+                                <div class="flex items-center justify-between">
+                                    <div class="flex items-center space-x-2">
+                                        <i class="fas {% if category == 'error' %}fa-exclamation-triangle{% elif category == 'success' %}fa-check-circle{% else %}fa-info-circle{% endif %}"></i>
+                                        <span class="font-medium">{{ message }}</span>
+                                    </div>
+                                    <button onclick="this.parentElement.parentElement.remove()" class="text-gray-400 hover:text-gray-600">
+                                        <i class="fas fa-times"></i>
+                                    </button>
+                                </div>
+                            </div>
+                        {% endfor %}
+                    </div>
+                {% endif %}
+            {% endwith %}
+            
+            {% block content %}{% endblock %}
+        </main>
+    </div>
+
+    <script>
+        function toggleSidebar() {
+            const sidebar = document.getElementById('sidebar');
+            sidebar.classList.toggle('-translate-x-full');
+        }
+        
+        function showLoading(message = 'Processing...') {
+            console.log('Loading:', message);
+        }
+        
+        function hideLoading() {
+            console.log('Loading complete');
+        }
+    </script>
+    
+    {% block extra_scripts %}{% endblock %}
+</body>
+</html>

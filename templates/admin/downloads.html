@@ -1,0 +1,238 @@
+{% extends "admin/base.html" %}
+
+{% block page_title %}Downloads Management{% endblock %}
+
+{% block content %}
+<!-- Filters -->
+<div class="bg-white rounded-2xl shadow-lg p-6 mb-6">
+    <form method="GET" class="flex flex-wrap items-center gap-4">
+        <div class="flex-1 min-w-64">
+            <input 
+                type="text" 
+                name="search" 
+                value="{{ current_search }}"
+                placeholder="Search by URL or filename..."
+                class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:border-blue-500 focus:ring-2 focus:ring-blue-200"
+            >
+        </div>
+        
+        <div>
+            <select name="platform" class="px-4 py-2 border border-gray-300 rounded-lg focus:border-blue-500 focus:ring-2 focus:ring-blue-200">
+                <option value="">All Platforms</option>
+                {% for platform in platforms %}
+                <option value="{{ platform }}" {% if platform == current_platform %}selected{% endif %}>
+                    {{ platform.title() }}
+                </option>
+                {% endfor %}
+            </select>
+        </div>
+        
+        <button type="submit" class="bg-blue-500 text-white px-6 py-2 rounded-lg hover:bg-blue-600 transition-colors">
+            <i class="fas fa-search mr-2"></i>Filter
+        </button>
+        
+        <a href="{{ url_for('admin_downloads') }}" class="bg-gray-500 text-white px-6 py-2 rounded-lg hover:bg-gray-600 transition-colors">
+            <i class="fas fa-times mr-2"></i>Clear
+        </a>
+    </form>
+</div>
+
+<!-- Downloads Table -->
+<div class="bg-white rounded-2xl shadow-lg overflow-hidden">
+    <div class="p-6 border-b border-gray-200">
+        <div class="flex items-center justify-between">
+            <h3 class="text-lg font-semibold text-gray-800">
+                <i class="fas fa-download text-blue-500 mr-2"></i>
+                Downloads ({{ downloads.total }} total)
+            </h3>
+            <div class="flex items-center space-x-2">
+                <button onclick="bulkDelete()" class="bg-red-500 text-white px-4 py-2 rounded-lg hover:bg-red-600 transition-colors">
+                    <i class="fas fa-trash mr-2"></i>Delete Selected
+                </button>
+            </div>
+        </div>
+    </div>
+    
+    <div class="overflow-x-auto">
+        <table class="w-full">
+            <thead class="bg-gray-50">
+                <tr>
+                    <th class="px-6 py-3 text-left">
+                        <input type="checkbox" id="selectAll" onchange="toggleSelectAll()" class="rounded">
+                    </th>
+                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Platform</th>
+                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">File</th>
+                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Size</th>
+                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Type</th>
+                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Date</th>
+                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
+                </tr>
+            </thead>
+            <tbody class="bg-white divide-y divide-gray-200">
+                {% for download in downloads.items %}
+                <tr class="hover:bg-gray-50">
+                    <td class="px-6 py-4">
+                        <input type="checkbox" class="download-checkbox rounded" value="{{ download.id }}">
+                    </td>
+                    <td class="px-6 py-4">
+                        <div class="flex items-center">
+                            <div class="w-8 h-8 rounded-lg mr-3 flex items-center justify-center
+                                {% if download.platform == 'instagram' %}bg-pink-100 text-pink-600
+                                {% elif download.platform == 'tiktok' %}bg-gray-100 text-gray-800
+                                {% elif download.platform == 'facebook' %}bg-blue-100 text-blue-600
+                                {% elif download.platform == 'twitter' %}bg-sky-100 text-sky-600
+                                {% elif download.platform == 'youtube' %}bg-red-100 text-red-600
+                                {% else %}bg-gray-100 text-gray-600{% endif %}">
+                                <i class="fab fa-{{ download.platform }} text-sm"></i>
+                            </div>
+                            <span class="font-medium capitalize">{{ download.platform }}</span>
+                        </div>
+                    </td>
+                    <td class="px-6 py-4">
+                        <div>
+                            <p class="font-medium text-gray-900 truncate max-w-xs" title="{{ download.filename }}">
+                                {{ download.filename }}
+                            </p>
+                            <p class="text-sm text-gray-500 truncate max-w-xs" title="{{ download.url }}">
+                                {{ download.url[:50] }}{% if download.url|length > 50 %}...{% endif %}
+                            </p>
+                        </div>
+                    </td>
+                    <td class="px-6 py-4 text-sm text-gray-900">
+                        {{ format_file_size(download.file_size or 0) }}
+                    </td>
+                    <td class="px-6 py-4">
+                        <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium
+                            {% if download.media_type == 'video' %}bg-blue-100 text-blue-800
+                            {% elif download.media_type == 'image' %}bg-green-100 text-green-800
+                            {% else %}bg-gray-100 text-gray-800{% endif %}">
+                            <i class="fas {% if download.media_type == 'video' %}fa-video{% elif download.media_type == 'image' %}fa-image{% else %}fa-file{% endif %} mr-1"></i>
+                            {{ download.media_type or 'unknown' }}
+                        </span>
+                    </td>
+                    <td class="px-6 py-4 text-sm text-gray-900">
+                        {{ download.created_at.strftime('%b %d, %Y') }}<br>
+                        <span class="text-gray-500">{{ download.created_at.strftime('%I:%M %p') }}</span>
+                    </td>
+                    <td class="px-6 py-4">
+                        <div class="flex items-center space-x-2">
+                            <a href="{{ download.url }}" target="_blank" class="text-blue-600 hover:text-blue-800" title="View Original">
+                                <i class="fas fa-external-link-alt"></i>
+                            </a>
+                            <button onclick="deleteDownload({{ download.id }})" class="text-red-600 hover:text-red-800" title="Delete">
+                                <i class="fas fa-trash"></i>
+                            </button>
+                        </div>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    
+    <!-- Pagination -->
+    {% if downloads.pages > 1 %}
+    <div class="bg-white px-6 py-3 border-t border-gray-200">
+        <div class="flex items-center justify-between">
+            <div class="text-sm text-gray-700">
+                Showing {{ downloads.per_page * (downloads.page - 1) + 1 }} to 
+                {{ downloads.per_page * downloads.page if downloads.page < downloads.pages else downloads.total }} 
+                of {{ downloads.total }} results
+            </div>
+            <div class="flex items-center space-x-2">
+                {% if downloads.has_prev %}
+                <a href="{{ url_for('admin_downloads', page=downloads.prev_num, platform=current_platform, search=current_search) }}" 
+                   class="px-3 py-2 text-sm bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200">
+                    Previous
+                </a>
+                {% endif %}
+                
+                {% for page_num in downloads.iter_pages() %}
+                    {% if page_num %}
+                        {% if page_num != downloads.page %}
+                        <a href="{{ url_for('admin_downloads', page=page_num, platform=current_platform, search=current_search) }}" 
+                           class="px-3 py-2 text-sm bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200">
+                            {{ page_num }}
+                        </a>
+                        {% else %}
+                        <span class="px-3 py-2 text-sm bg-blue-500 text-white rounded-lg">
+                            {{ page_num }}
+                        </span>
+                        {% endif %}
+                    {% else %}
+                    <span class="px-3 py-2 text-sm text-gray-500">...</span>
+                    {% endif %}
+                {% endfor %}
+                
+                {% if downloads.has_next %}
+                <a href="{{ url_for('admin_downloads', page=downloads.next_num, platform=current_platform, search=current_search) }}" 
+                   class="px-3 py-2 text-sm bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200">
+                    Next
+                </a>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}
+
+{% block extra_scripts %}
+<script>
+function toggleSelectAll() {
+    const selectAll = document.getElementById('selectAll');
+    const checkboxes = document.querySelectorAll('.download-checkbox');
+    checkboxes.forEach(checkbox => {
+        checkbox.checked = selectAll.checked;
+    });
+}
+
+function deleteDownload(id) {
+    if (!confirm('Are you sure you want to delete this download?')) {
+        return;
+    }
+    
+    fetch(`/admin/api/delete-download/${id}`, {
+        method: 'DELETE',
+        headers: {
+            'Content-Type': 'application/json',
+        }
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            location.reload();
+        } else {
+            alert('Error: ' + data.error);
+        }
+    })
+    .catch(error => {
+        alert('Error deleting download');
+    });
+}
+
+function bulkDelete() {
+    const selected = document.querySelectorAll('.download-checkbox:checked');
+    if (selected.length === 0) {
+        alert('Please select downloads to delete');
+        return;
+    }
+    
+    if (!confirm(`Are you sure you want to delete ${selected.length} downloads?`)) {
+        return;
+    }
+    
+    const ids = Array.from(selected).map(cb => cb.value);
+    
+    Promise.all(ids.map(id => 
+        fetch(`/admin/api/delete-download/${id}`, { method: 'DELETE' })
+    ))
+    .then(() => {
+        location.reload();
+    })
+    .catch(error => {
+        alert('Error deleting downloads');
+    });
+}
+</script>
+{% endblock %}

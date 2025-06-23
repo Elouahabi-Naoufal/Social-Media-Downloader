@@ -22,6 +22,31 @@ class DownloadHistory(db.Model):
     media_type = Column(String(50))
     created_at = Column(DateTime, default=datetime.utcnow)
 
+class Blog(db.Model):
+    """Model for blog posts"""
+    __tablename__ = 'blogs'
+    
+    id = Column(Integer, primary_key=True)
+    title = Column(String(200), nullable=False)
+    slug = Column(String(200), nullable=False, unique=True)
+    content = Column(db.Text, nullable=False)
+    excerpt = Column(String(300))
+    published = Column(db.Boolean, default=False)
+    created_at = Column(DateTime, default=datetime.utcnow)
+    updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+
+class Image(db.Model):
+    """Model for uploaded images"""
+    __tablename__ = 'images'
+    
+    id = Column(Integer, primary_key=True)
+    filename = Column(String(255), nullable=False)
+    original_name = Column(String(255), nullable=False)
+    file_size = Column(BigInteger)
+    mime_type = Column(String(100))
+    data = Column(db.LargeBinary, nullable=False)
+    created_at = Column(DateTime, default=datetime.utcnow)
+
 def validate_url(url):
     """Validate if URL is properly formatted and accessible"""
     try:

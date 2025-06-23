@@ -1,70 +1,157 @@
 <!DOCTYPE html>
-<html lang="en" data-theme="light">
+<html lang="en" class="scroll-smooth">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>{% block title %}Social Media Downloader{% endblock %}</title>
     
-    <!-- Bootstrap CSS -->
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
     <!-- Font Awesome -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <!-- Custom CSS -->
-    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        primary: {
+                            50: '#eff6ff',
+                            100: '#dbeafe',
+                            200: '#bfdbfe',
+                            300: '#93c5fd',
+                            400: '#60a5fa',
+                            500: '#3b82f6',
+                            600: '#2563eb',
+                            700: '#1d4ed8',
+                            800: '#1e40af',
+                            900: '#1e3a8a'
+                        },
+                        success: {
+                            50: '#ecfdf5',
+                            100: '#d1fae5',
+                            200: '#a7f3d0',
+                            300: '#6ee7b7',
+                            400: '#34d399',
+                            500: '#10b981',
+                            600: '#059669',
+                            700: '#047857',
+                            800: '#065f46',
+                            900: '#064e3b'
+                        },
+                        warning: {
+                            50: '#fffbeb',
+                            100: '#fef3c7',
+                            200: '#fde68a',
+                            300: '#fcd34d',
+                            400: '#fbbf24',
+                            500: '#f59e0b',
+                            600: '#d97706',
+                            700: '#b45309',
+                            800: '#92400e',
+                            900: '#78350f'
+                        }
+                    },
+                    fontFamily: {
+                        'sans': ['Inter', 'system-ui', 'sans-serif']
+                    },
+                    animation: {
+                        'float': 'float 3s ease-in-out infinite',
+                        'pulse-slow': 'pulse 3s infinite',
+                        'bounce-slow': 'bounce 2s infinite'
+                    }
+                }
+            }
+        }
+    </script>
     
     {% block extra_head %}{% endblock %}
 </head>
-<body>
+<body class="bg-gradient-to-br from-blue-50 via-white to-cyan-50 min-h-screen font-sans">
     <!-- Navigation -->
-    <nav class="navbar navbar-expand-lg navbar-dark bg-primary fixed-top">
-        <div class="container">
-            <a class="navbar-brand fw-bold" href="{{ url_for('index') }}">
-                <i class="fas fa-download me-2"></i>Social Media Downloader
-            </a>
-            
-            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
-                <span class="navbar-toggler-icon"></span>
-            </button>
-            
-            <div class="collapse navbar-collapse" id="navbarNav">
-                <ul class="navbar-nav me-auto">
-                    <li class="nav-item">
-                        <a class="nav-link" href="{{ url_for('index') }}">
-                            <i class="fas fa-home me-1"></i>Home
+    <nav class="fixed top-0 w-full z-50 bg-white/80 backdrop-blur-lg border-b border-blue-100 shadow-lg">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex justify-between items-center h-16">
+                <div class="flex items-center space-x-8">
+                    <a href="{{ url_for('index') }}" class="flex items-center space-x-3 group">
+                        <div class="bg-gradient-to-r from-blue-500 to-cyan-500 p-2 rounded-xl group-hover:scale-110 transition-transform duration-300">
+                            <i class="fas fa-cloud-download-alt text-white text-lg"></i>
+                        </div>
+                        <span class="text-xl font-bold bg-gradient-to-r from-blue-600 to-cyan-600 bg-clip-text text-transparent">
+                            Social Media Downloader
+                        </span>
+                    </a>
+                    
+                    <div class="hidden md:flex space-x-6">
+                        <a href="{{ url_for('index') }}" class="flex items-center space-x-2 px-3 py-2 rounded-lg text-gray-700 hover:text-blue-600 hover:bg-blue-50 transition-all duration-200">
+                            <i class="fas fa-home"></i>
+                            <span class="font-medium">Home</span>
                         </a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link" href="{{ url_for('history') }}">
-                            <i class="fas fa-history me-1"></i>History
+                        <a href="{{ url_for('blog_list') }}" class="flex items-center space-x-2 px-3 py-2 rounded-lg text-gray-700 hover:text-blue-600 hover:bg-blue-50 transition-all duration-200">
+                            <i class="fas fa-blog"></i>
+                            <span class="font-medium">Blog</span>
                         </a>
-                    </li>
-                </ul>
+                        <a href="{{ url_for('history') }}" class="flex items-center space-x-2 px-3 py-2 rounded-lg text-gray-700 hover:text-blue-600 hover:bg-blue-50 transition-all duration-200">
+                            <i class="fas fa-history"></i>
+                            <span class="font-medium">History</span>
+                        </a>
+                    </div>
+                </div>
                 
-                <div class="d-flex align-items-center">
-                    <!-- Theme Toggle -->
-                    <button class="btn btn-outline-light btn-sm me-2" id="themeToggle">
+                <div class="flex items-center space-x-4">
+                    <button id="themeToggle" class="p-2 rounded-lg bg-gradient-to-r from-blue-500 to-cyan-500 text-white hover:from-blue-600 hover:to-cyan-600 transition-all duration-300 hover:scale-110">
                         <i class="fas fa-moon" id="themeIcon"></i>
                     </button>
+                    
+                    <!-- Mobile menu button -->
+                    <button id="mobileMenuBtn" class="md:hidden p-2 rounded-lg text-gray-700 hover:bg-blue-50">
+                        <i class="fas fa-bars"></i>
+                    </button>
+                </div>
+            </div>
+            
+            <!-- Mobile menu -->
+            <div id="mobileMenu" class="hidden md:hidden pb-4">
+                <div class="flex flex-col space-y-2">
+                    <a href="{{ url_for('index') }}" class="flex items-center space-x-2 px-3 py-2 rounded-lg text-gray-700 hover:text-blue-600 hover:bg-blue-50">
+                        <i class="fas fa-home"></i>
+                        <span>Home</span>
+                    </a>
+                    <a href="{{ url_for('blog_list') }}" class="flex items-center space-x-2 px-3 py-2 rounded-lg text-gray-700 hover:text-blue-600 hover:bg-blue-50">
+                        <i class="fas fa-blog"></i>
+                        <span>Blog</span>
+                    </a>
+                    <a href="{{ url_for('history') }}" class="flex items-center space-x-2 px-3 py-2 rounded-lg text-gray-700 hover:text-blue-600 hover:bg-blue-50">
+                        <i class="fas fa-history"></i>
+                        <span>History</span>
+                    </a>
                 </div>
             </div>
         </div>
     </nav>
 
     <!-- Main Content -->
-    <main class="main-content">
-        <div class="container">
+    <main class="pt-20 pb-16 min-h-screen">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <!-- Flash Messages -->
             {% with messages = get_flashed_messages(with_categories=true) %}
                 {% if messages %}
-                    <div class="row mt-3">
-                        <div class="col-12">
-                            {% for category, message in messages %}
-                                <div class="alert alert-{{ 'danger' if category == 'error' else category }} alert-dismissible fade show" role="alert">
-                                    {{ message }}
-                                    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                    <div class="mb-6">
+                        {% for category, message in messages %}
+                            <div class="mb-4 p-4 rounded-xl border-l-4 {% if category == 'error' %}bg-red-50 border-red-400 text-red-700{% elif category == 'success' %}bg-green-50 border-green-400 text-green-700{% else %}bg-blue-50 border-blue-400 text-blue-700{% endif %} shadow-lg animate-pulse">
+                                <div class="flex items-center justify-between">
+                                    <div class="flex items-center space-x-2">
+                                        <i class="fas {% if category == 'error' %}fa-exclamation-triangle{% elif category == 'success' %}fa-check-circle{% else %}fa-info-circle{% endif %}"></i>
+                                        <span class="font-medium">{{ message }}</span>
+                                    </div>
+                                    <button onclick="this.parentElement.parentElement.remove()" class="text-gray-400 hover:text-gray-600">
+                                        <i class="fas fa-times"></i>
+                                    </button>
                                 </div>
-                            {% endfor %}
-                        </div>
+                            </div>
+                        {% endfor %}
                     </div>
                 {% endif %}
             {% endwith %}
@@ -74,41 +161,80 @@
     </main>
 
     <!-- Footer -->
-    <footer class="footer bg-dark text-light py-4 mt-5">
-        <div class="container">
-            <div class="row">
-                <div class="col-md-6">
-                    <h5>Social Media Downloader</h5>
-                    <p class="mb-0">Download content from Instagram, TikTok, Facebook, Twitter, and YouTube with ease.</p>
-                </div>
-                <div class="col-md-6 text-md-end">
-                    <p class="mb-0">
-                        <small>Supported platforms:</small><br>
-                        <i class="fab fa-instagram text-danger me-2"></i>
-                        <i class="fab fa-tiktok text-dark me-2"></i>
-                        <i class="fab fa-facebook text-primary me-2"></i>
-                        <i class="fab fa-twitter text-info me-2"></i>
-                        <i class="fab fa-youtube text-danger"></i>
+    <footer class="bg-gradient-to-r from-gray-900 via-blue-900 to-cyan-900 text-white">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+            <div class="grid md:grid-cols-2 gap-8">
+                <div>
+                    <div class="flex items-center space-x-3 mb-4">
+                        <div class="bg-gradient-to-r from-blue-400 to-cyan-400 p-2 rounded-xl">
+                            <i class="fas fa-cloud-download-alt text-white"></i>
+                        </div>
+                        <h3 class="text-xl font-bold">Social Media Downloader</h3>
+                    </div>
+                    <p class="text-gray-300 leading-relaxed">
+                        Download content from Instagram, TikTok, Facebook, Twitter, and YouTube with ease. 
+                        Fast, secure, and completely free to use.
                     </p>
                 </div>
+                <div class="md:text-right">
+                    <h4 class="text-lg font-semibold mb-4">Supported Platforms</h4>
+                    <div class="flex md:justify-end space-x-4">
+                        <div class="bg-gradient-to-r from-pink-500 to-rose-500 p-3 rounded-xl hover:scale-110 transition-transform duration-300">
+                            <i class="fab fa-instagram text-white text-xl"></i>
+                        </div>
+                        <div class="bg-gradient-to-r from-gray-800 to-black p-3 rounded-xl hover:scale-110 transition-transform duration-300">
+                            <i class="fab fa-tiktok text-white text-xl"></i>
+                        </div>
+                        <div class="bg-gradient-to-r from-blue-600 to-blue-700 p-3 rounded-xl hover:scale-110 transition-transform duration-300">
+                            <i class="fab fa-facebook text-white text-xl"></i>
+                        </div>
+                        <div class="bg-gradient-to-r from-sky-400 to-blue-500 p-3 rounded-xl hover:scale-110 transition-transform duration-300">
+                            <i class="fab fa-twitter text-white text-xl"></i>
+                        </div>
+                        <div class="bg-gradient-to-r from-red-500 to-red-600 p-3 rounded-xl hover:scale-110 transition-transform duration-300">
+                            <i class="fab fa-youtube text-white text-xl"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="border-t border-gray-700 mt-8 pt-8 text-center text-gray-400">
+                <p>&copy; 2024 Social Media Downloader. Built with ❤️ for content creators.</p>
             </div>
         </div>
     </footer>
 
     <!-- Loading Overlay -->
-    <div class="loading-overlay" id="loadingOverlay">
-        <div class="loading-spinner">
-            <div class="spinner-border text-primary" role="status">
-                <span class="visually-hidden">Loading...</span>
+    <div id="loadingOverlay" class="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center opacity-0 invisible transition-all duration-300">
+        <div class="bg-white rounded-2xl p-8 shadow-2xl text-center max-w-sm mx-4">
+            <div class="relative mb-6">
+                <div class="w-16 h-16 mx-auto">
+                    <div class="absolute inset-0 border-4 border-blue-200 rounded-full"></div>
+                    <div class="absolute inset-0 border-4 border-blue-500 rounded-full border-t-transparent animate-spin"></div>
+                </div>
             </div>
-            <p class="mt-3 text-muted">Processing your request...</p>
+            <h3 class="text-lg font-semibold text-gray-800 mb-2">Processing Request</h3>
+            <p class="text-gray-600" id="loadingText">Please wait while we process your request...</p>
         </div>
     </div>
 
-    <!-- Bootstrap JS -->
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     <!-- Custom JS -->
     <script src="{{ url_for('static', filename='js/main.js') }}"></script>
+    
+    <script>
+        // Mobile menu toggle
+        document.getElementById('mobileMenuBtn').addEventListener('click', function() {
+            const menu = document.getElementById('mobileMenu');
+            menu.classList.toggle('hidden');
+        });
+        
+        // Theme toggle functionality
+        document.getElementById('themeToggle').addEventListener('click', function() {
+            // Add theme toggle logic here
+            const icon = document.getElementById('themeIcon');
+            icon.classList.toggle('fa-moon');
+            icon.classList.toggle('fa-sun');
+        });
+    </script>
     
     {% block extra_scripts %}{% endblock %}
 </body>

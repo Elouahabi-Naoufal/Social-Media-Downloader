@@ -59,13 +59,7 @@ class NotificationManager {
         if (!container) {
             container = document.createElement('div');
             container.id = 'notification-container';
-            container.style.cssText = `
-                position: fixed;
-                top: 100px;
-                right: 20px;
-                z-index: 10000;
-                pointer-events: none;
-            `;
+            container.className = 'fixed top-20 right-4 z-50 space-y-4 pointer-events-none';
             document.body.appendChild(container);
         }
         return container;
@@ -77,7 +71,8 @@ class NotificationManager {
         
         // Trigger animation
         setTimeout(() => {
-            notification.classList.add('show');
+            notification.classList.remove('translate-x-full', 'opacity-0');
+            notification.classList.add('translate-x-0', 'opacity-100');
         }, 10);
         
         // Auto remove
@@ -90,15 +85,28 @@ class NotificationManager {
     
     createNotification(message, type) {
         const notification = document.createElement('div');
-        notification.className = `notification ${type}`;
-        notification.style.pointerEvents = 'auto';
+        const baseClasses = 'transform translate-x-full opacity-0 transition-all duration-300 pointer-events-auto max-w-sm bg-white rounded-2xl shadow-2xl border p-4';
+        const typeClasses = {
+            success: 'border-green-200 bg-gradient-to-r from-green-50 to-emerald-50',
+            error: 'border-red-200 bg-gradient-to-r from-red-50 to-pink-50',
+            warning: 'border-yellow-200 bg-gradient-to-r from-yellow-50 to-orange-50',
+            info: 'border-blue-200 bg-gradient-to-r from-blue-50 to-cyan-50'
+        };
+        
+        notification.className = `${baseClasses} ${typeClasses[type] || typeClasses.info}`;
         
         const icon = this.getIcon(type);
+        const iconColor = this.getIconColor(type);
+        
         notification.innerHTML = `
-            <div class="d-flex align-items-center">
-                <i class="${icon} me-2"></i>
-                <span>${message}</span>
-                <button class="btn btn-sm ms-2 p-0" onclick="notificationManager.remove(this.parentElement.parentElement)" style="color: inherit; background: none; border: none;">
+            <div class="flex items-center space-x-3">
+                <div class="flex-shrink-0">
+                    <i class="${icon} ${iconColor} text-lg"></i>
+                </div>
+                <div class="flex-1">
+                    <p class="text-gray-800 font-medium">${message}</p>
+                </div>
+                <button onclick="notificationManager.remove(this)" class="flex-shrink-0 text-gray-400 hover:text-gray-600 transition-colors duration-200">
                     <i class="fas fa-times"></i>
                 </button>
             </div>
@@ -117,9 +125,20 @@ class NotificationManager {
         return icons[type] || icons.info;
     }
     
+    getIconColor(type) {
+        const colors = {
+            success: 'text-green-500',
+            error: 'text-red-500',
+            warning: 'text-yellow-500',
+            info: 'text-blue-500'
+        };
+        return colors[type] || colors.info;
+    }
+    
     remove(notification) {
         if (notification && notification.parentNode) {
-            notification.classList.remove('show');
+            notification.classList.remove('translate-x-0', 'opacity-100');
+            notification.classList.add('translate-x-full', 'opacity-0');
             setTimeout(() => {
                 if (notification.parentNode) {
                     notification.parentNode.removeChild(notification);
@@ -138,12 +157,13 @@ class LoadingManager {
     
     show(message = 'Processing...') {
         if (this.overlay) {
-            const messageElement = this.overlay.querySelector('p');
+            const messageElement = this.overlay.querySelector('#loadingText');
             if (messageElement) {
                 messageElement.textContent = message;
             }
             
-            this.overlay.classList.add('show');
+            this.overlay.classList.remove('opacity-0', 'invisible');
+            this.overlay.classList.add('opacity-100', 'visible');
             this.isLoading = true;
             
             // Prevent body scroll
@@ -153,7 +173,8 @@ class LoadingManager {
     
     hide() {
         if (this.overlay) {
-            this.overlay.classList.remove('show');
+            this.overlay.classList.remove('opacity-100', 'visible');
+            this.overlay.classList.add('opacity-0', 'invisible');
             this.isLoading = false;
             
             // Restore body scroll
@@ -353,10 +374,33 @@ document.addEventListener('DOMContentLoaded', function() {
     notificationManager = new NotificationManager();
     loadingManager = new LoadingManager();
     
-    // Initialize tooltips
-    const tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'));
-    tooltipTriggerList.map(function (tooltipTriggerEl) {
-        return new bootstrap.Tooltip(tooltipTriggerEl);
+    // Initialize custom tooltips (since we're not using Bootstrap anymore)
+    document.querySelectorAll('[title]').forEach(element => {
+        element.addEventListener('mouseenter', function() {
+            const tooltip = document.createElement('div');
+            tooltip.className = 'absolute z-50 px-3 py-2 text-sm text-white bg-gray-900 rounded-lg shadow-lg pointer-events-none';
+            tooltip.textContent = this.getAttribute('title');
+            tooltip.id = 'tooltip-' + Math.random().toString(36).substr(2, 9);
+            
+            document.body.appendChild(tooltip);
+            
+            const rect = this.getBoundingClientRect();
+            tooltip.style.left = rect.left + (rect.width / 2) - (tooltip.offsetWidth / 2) + 'px';
+            tooltip.style.top = rect.top - tooltip.offsetHeight - 8 + 'px';
+            
+            this.setAttribute('data-tooltip-id', tooltip.id);
+        });
+        
+        element.addEventListener('mouseleave', function() {
+            const tooltipId = this.getAttribute('data-tooltip-id');
+            if (tooltipId) {
+                const tooltip = document.getElementById(tooltipId);
+                if (tooltip) {
+                    tooltip.remove();
+                }
+                this.removeAttribute('data-tooltip-id');
+            }
+        });
     });
     
     // Add smooth scrolling to anchor links
@@ -379,7 +423,7 @@ document.addEventListener('DOMContentLoaded', function() {
             const submitButton = form.querySelector('button[type="submit"]');
             if (submitButton && !submitButton.disabled) {
                 const originalText = submitButton.innerHTML;
-                submitButton.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i>Processing...';
+                submitButton.innerHTML = '<div class="flex items-center space-x-2"><i class="fas fa-spinner animate-spin"></i><span>Processing...</span></div>';
                 submitButton.disabled = true;
                 
                 // Re-enable after 30 seconds as fallback
@@ -431,14 +475,10 @@ document.addEventListener('DOMContentLoaded', function() {
                 return;
             }
             
-            // Close any open modals
-            const openModal = document.querySelector('.modal.show');
-            if (openModal) {
-                const modal = bootstrap.Modal.getInstance(openModal);
-                if (modal) {
-                    modal.hide();
-                }
-            }
+            // Close any open dropdowns
+            document.querySelectorAll('[id^="dropdown-"]').forEach(dropdown => {
+                dropdown.classList.add('hidden');
+            });
         }
     });
     
@@ -458,11 +498,11 @@ document.addEventListener('visibilitychange', function() {
 
 // Handle online/offline status
 window.addEventListener('online', function() {
-    showNotification('Connection restored', 'success', 3000);
+    showNotification('🌐 Connection restored', 'success', 3000);
 });
 
 window.addEventListener('offline', function() {
-    showNotification('No internet connection', 'warning', 5000);
+    showNotification('📡 No internet connection', 'warning', 5000);
 });
 
 // Expose utilities globally for easy access

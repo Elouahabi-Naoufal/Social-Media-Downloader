@@ -1,0 +1,292 @@
+{% extends "admin/base.html" %}
+
+{% block page_title %}Analytics{% endblock %}
+
+{% block content %}
+<!-- Time-based Analytics -->
+<div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
+    <!-- Hourly Distribution -->
+    <div class="bg-white rounded-2xl shadow-lg p-6">
+        <h3 class="text-lg font-semibold text-gray-800 mb-4">
+            <i class="fas fa-clock text-blue-500 mr-2"></i>
+            Downloads by Hour
+        </h3>
+        <canvas id="hourlyChart" width="400" height="200"></canvas>
+    </div>
+    
+    <!-- Weekly Distribution -->
+    <div class="bg-white rounded-2xl shadow-lg p-6">
+        <h3 class="text-lg font-semibold text-gray-800 mb-4">
+            <i class="fas fa-calendar-week text-green-500 mr-2"></i>
+            Downloads by Day of Week
+        </h3>
+        <canvas id="weeklyChart" width="400" height="200"></canvas>
+    </div>
+</div>
+
+<!-- Monthly Trends -->
+<div class="bg-white rounded-2xl shadow-lg p-6 mb-8">
+    <h3 class="text-lg font-semibold text-gray-800 mb-4">
+        <i class="fas fa-chart-area text-purple-500 mr-2"></i>
+        Monthly Trends (Last 12 Months)
+    </h3>
+    <canvas id="monthlyChart" width="800" height="300"></canvas>
+</div>
+
+<!-- Platform Growth -->
+<div class="bg-white rounded-2xl shadow-lg p-6 mb-8">
+    <h3 class="text-lg font-semibold text-gray-800 mb-4">
+        <i class="fas fa-trending-up text-orange-500 mr-2"></i>
+        Platform Growth (Last 90 Days)
+    </h3>
+    <canvas id="growthChart" width="800" height="300"></canvas>
+</div>
+
+<!-- Analytics Summary -->
+<div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+    <!-- Peak Hours -->
+    <div class="bg-white rounded-2xl shadow-lg p-6">
+        <h4 class="text-lg font-semibold text-gray-800 mb-4">
+            <i class="fas fa-fire text-red-500 mr-2"></i>
+            Peak Activity Hours
+        </h4>
+        <div class="space-y-3">
+            {% set peak_hours = hourly_stats|sort(attribute='count', reverse=true)[:3] %}
+            {% for hour in peak_hours %}
+            <div class="flex items-center justify-between">
+                <span class="text-gray-600">{{ '%02d:00 - %02d:59'|format(hour.hour|int, hour.hour|int) }}</span>
+                <span class="font-semibold text-gray-800">{{ hour.count }} downloads</span>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+    
+    <!-- Busiest Days -->
+    <div class="bg-white rounded-2xl shadow-lg p-6">
+        <h4 class="text-lg font-semibold text-gray-800 mb-4">
+            <i class="fas fa-calendar-day text-blue-500 mr-2"></i>
+            Busiest Days
+        </h4>
+        <div class="space-y-3">
+            {% set days = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'] %}
+            {% set busy_days = weekly_stats|sort(attribute='count', reverse=true)[:3] %}
+            {% for day in busy_days %}
+            <div class="flex items-center justify-between">
+                <span class="text-gray-600">{{ days[day.day_of_week|int] }}</span>
+                <span class="font-semibold text-gray-800">{{ day.count }} downloads</span>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+    
+    <!-- Growth Metrics -->
+    <div class="bg-white rounded-2xl shadow-lg p-6">
+        <h4 class="text-lg font-semibold text-gray-800 mb-4">
+            <i class="fas fa-chart-line text-green-500 mr-2"></i>
+            Growth Metrics
+        </h4>
+        <div class="space-y-3">
+            {% if monthly_stats|length >= 2 %}
+            {% set current_month = monthly_stats[-1] %}
+            {% set prev_month = monthly_stats[-2] %}
+            {% set growth = ((current_month.downloads - prev_month.downloads) / prev_month.downloads * 100) if prev_month.downloads > 0 else 0 %}
+            <div class="flex items-center justify-between">
+                <span class="text-gray-600">Monthly Growth</span>
+                <span class="font-semibold {% if growth >= 0 %}text-green-600{% else %}text-red-600{% endif %}">
+                    {{ '%+.1f'|format(growth) }}%
+                </span>
+            </div>
+            {% endif %}
+            
+            <div class="flex items-center justify-between">
+                <span class="text-gray-600">Total Storage</span>
+                <span class="font-semibold text-gray-800">
+                    {% set total_storage = monthly_stats|sum(attribute='storage') %}
+                    {{ format_file_size(total_storage or 0) }}
+                </span>
+            </div>
+            
+            <div class="flex items-center justify-between">
+                <span class="text-gray-600">Avg per Month</span>
+                <span class="font-semibold text-gray-800">
+                    {% if monthly_stats|length > 0 %}
+                    {{ (monthly_stats|sum(attribute='downloads') / monthly_stats|length)|round|int }}
+                    {% else %}0{% endif %}
+                </span>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_scripts %}
+<script>
+// Hourly Distribution Chart
+const hourlyCtx = document.getElementById('hourlyChart').getContext('2d');
+const hourlyLabels = Array.from({length: 24}, (_, i) => `${i.toString().padStart(2, '0')}:00`);
+const hourlyData = new Array(24).fill(0);
+
+{% for stat in hourly_stats %}
+hourlyData[{{ stat.hour|int }}] = {{ stat.count }};
+{% endfor %}
+
+new Chart(hourlyCtx, {
+    type: 'bar',
+    data: {
+        labels: hourlyLabels,
+        datasets: [{
+            label: 'Downloads',
+            data: hourlyData,
+            backgroundColor: 'rgba(59, 130, 246, 0.6)',
+            borderColor: 'rgba(59, 130, 246, 1)',
+            borderWidth: 1
+        }]
+    },
+    options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        scales: {
+            y: {
+                beginAtZero: true,
+                ticks: { stepSize: 1 }
+            }
+        },
+        plugins: {
+            legend: { display: false }
+        }
+    }
+});
+
+// Weekly Distribution Chart
+const weeklyCtx = document.getElementById('weeklyChart').getContext('2d');
+const weeklyLabels = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+const weeklyData = new Array(7).fill(0);
+
+{% for stat in weekly_stats %}
+weeklyData[{{ stat.day_of_week|int }}] = {{ stat.count }};
+{% endfor %}
+
+new Chart(weeklyCtx, {
+    type: 'doughnut',
+    data: {
+        labels: weeklyLabels,
+        datasets: [{
+            data: weeklyData,
+            backgroundColor: [
+                '#ef4444', '#f97316', '#f59e0b', '#eab308',
+                '#22c55e', '#06b6d4', '#3b82f6'
+            ],
+            borderWidth: 0
+        }]
+    },
+    options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: {
+            legend: {
+                position: 'bottom',
+                labels: { padding: 15, usePointStyle: true }
+            }
+        }
+    }
+});
+
+// Monthly Trends Chart
+const monthlyCtx = document.getElementById('monthlyChart').getContext('2d');
+new Chart(monthlyCtx, {
+    type: 'line',
+    data: {
+        labels: [{% for stat in monthly_stats %}'{{ stat.month }}'{% if not loop.last %},{% endif %}{% endfor %}],
+        datasets: [{
+            label: 'Downloads',
+            data: [{% for stat in monthly_stats %}{{ stat.downloads }}{% if not loop.last %},{% endif %}{% endfor %}],
+            borderColor: '#8b5cf6',
+            backgroundColor: 'rgba(139, 92, 246, 0.1)',
+            fill: true,
+            tension: 0.4
+        }, {
+            label: 'Storage (MB)',
+            data: [{% for stat in monthly_stats %}{{ (stat.storage or 0) / 1024 / 1024 }}{% if not loop.last %},{% endif %}{% endfor %}],
+            borderColor: '#06b6d4',
+            backgroundColor: 'rgba(6, 182, 212, 0.1)',
+            fill: true,
+            tension: 0.4,
+            yAxisID: 'y1'
+        }]
+    },
+    options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        scales: {
+            y: {
+                type: 'linear',
+                display: true,
+                position: 'left',
+                beginAtZero: true
+            },
+            y1: {
+                type: 'linear',
+                display: true,
+                position: 'right',
+                beginAtZero: true,
+                grid: { drawOnChartArea: false }
+            }
+        }
+    }
+});
+
+// Platform Growth Chart
+const growthCtx = document.getElementById('growthChart').getContext('2d');
+const platforms = [...new Set([{% for item in platform_growth %}'{{ item.platform }}'{% if not loop.last %},{% endif %}{% endfor %}])];
+const dates = [...new Set([{% for item in platform_growth %}'{{ item.date.strftime("%m/%d") }}'{% if not loop.last %},{% endif %}{% endfor %}])];
+
+const platformColors = {
+    'instagram': '#ec4899',
+    'tiktok': '#374151',
+    'facebook': '#3b82f6',
+    'twitter': '#0ea5e9',
+    'youtube': '#ef4444'
+};
+
+const datasets = platforms.map(platform => {
+    const data = dates.map(date => {
+        const item = [{% for item in platform_growth %}{ date: '{{ item.date.strftime("%m/%d") }}', platform: '{{ item.platform }}', count: {{ item.count }} }{% if not loop.last %},{% endif %}{% endfor %}]
+            .find(i => i.date === date && i.platform === platform);
+        return item ? item.count : 0;
+    });
+    
+    return {
+        label: platform.charAt(0).toUpperCase() + platform.slice(1),
+        data: data,
+        borderColor: platformColors[platform] || '#6b7280',
+        backgroundColor: (platformColors[platform] || '#6b7280') + '20',
+        fill: false,
+        tension: 0.4
+    };
+});
+
+new Chart(growthCtx, {
+    type: 'line',
+    data: {
+        labels: dates,
+        datasets: datasets
+    },
+    options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        scales: {
+            y: {
+                beginAtZero: true,
+                ticks: { stepSize: 1 }
+            }
+        },
+        plugins: {
+            legend: {
+                position: 'top',
+                labels: { usePointStyle: true }
+            }
+        }
+    }
+});
+</script>
+{% endblock %}

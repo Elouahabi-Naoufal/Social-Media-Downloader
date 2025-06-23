@@ -13,8 +13,13 @@ from utils import (
     download_media, 
     cleanup_old_files,
     get_file_info,
-    DownloadHistory
+    DownloadHistory,
+    Blog,
+    Image
 )
+
+# Import admin routes
+import admin
 
 # Start cleanup thread
 cleanup_thread = threading.Thread(target=cleanup_old_files, daemon=True)
@@ -145,6 +150,26 @@ def delete_history_item(item_id):
 @app.errorhandler(404)
 def not_found_error(error):
     return render_template('index.html'), 404
+
+@app.route('/blog')
+def blog_list():
+    """Blog listing page"""
+    print("=== BLOG ROUTE ACCESSED ===")
+    try:
+        blogs = Blog.query.all()
+        print(f"Found {len(blogs)} total blogs")
+        published = [b for b in blogs if b.published]
+        print(f"Found {len(published)} published blogs")
+        return render_template('blog/list.html', blogs=published)
+    except Exception as e:
+        print(f"Error: {e}")
+        return render_template('blog/list.html', blogs=[])
+
+@app.route('/blog/<slug>')
+def blog_detail(slug):
+    """Blog detail page"""
+    blog = Blog.query.filter_by(slug=slug, published=True).first_or_404()
+    return render_template('blog/detail.html', blog=blog)
 
 @app.errorhandler(500)
 def internal_error(error):
