@@ -505,6 +505,108 @@ window.addEventListener('offline', function() {
     showNotification('📡 No internet connection', 'warning', 5000);
 });
 
+// Video info preview functionality
+function getVideoInfo(url) {
+    showLoading('Fetching video information...');
+    
+    fetch('/get-video-info', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ url })
+    })
+    .then(response => response.json())
+    .then(data => {
+        hideLoading();
+        
+        if (data.success) {
+            displayVideoPreview(data, url);
+        } else {
+            showNotification(data.error || 'Failed to get video info', 'error');
+        }
+    })
+    .catch(error => {
+        hideLoading();
+        showNotification('Network error occurred', 'error');
+        console.error('Video info error:', error);
+    });
+}
+
+function displayVideoPreview(videoInfo, url) {
+    const resultDiv = document.getElementById('result') || document.body;
+    resultDiv.innerHTML = '';
+    
+    const previewCard = document.createElement('div');
+    previewCard.className = 'bg-white rounded-lg shadow-lg p-6 mt-4';
+    previewCard.innerHTML = `
+        <div class="flex items-start space-x-4">
+            ${videoInfo.thumbnail ? `<img src="${videoInfo.thumbnail}" alt="Thumbnail" class="w-32 h-24 object-cover rounded-lg">` : '<div class="w-32 h-24 bg-gray-200 rounded-lg flex items-center justify-center"><i class="fas fa-video text-gray-400"></i></div>'}
+            <div class="flex-1">
+                <h3 class="text-lg font-semibold text-gray-800 mb-2">${videoInfo.title}</h3>
+                <div class="text-sm text-gray-600 space-y-1">
+                    <p><i class="fas fa-clock mr-2"></i>Duration: ${videoInfo.duration}</p>
+                    <p><i class="fas fa-hdd mr-2"></i>Size: ${videoInfo.file_size}</p>
+                    <p><i class="fas fa-globe mr-2"></i>Platform: ${videoInfo.platform}</p>
+                </div>
+            </div>
+        </div>
+        <div class="mt-4 flex space-x-3">
+            <button onclick="downloadVideo('${url}', '${videoInfo.platform}')" class="bg-blue-500 text-white px-6 py-2 rounded-lg hover:bg-blue-600 transition-colors">
+                <i class="fas fa-download mr-2"></i>Download Video
+            </button>
+            <button onclick="clearPreview()" class="bg-gray-500 text-white px-6 py-2 rounded-lg hover:bg-gray-600 transition-colors">
+                <i class="fas fa-times mr-2"></i>Clear
+            </button>
+        </div>
+    `;
+    
+    resultDiv.appendChild(previewCard);
+}
+
+function downloadVideo(url, platform) {
+    showLoading('Downloading video to server...');
+    
+    fetch('/download', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ url, platform })
+    })
+    .then(response => response.json())
+    .then(data => {
+        hideLoading();
+        
+        if (data.success) {
+            showNotification(data.message || 'Video downloaded successfully!', 'success');
+            
+            const resultDiv = document.getElementById('result');
+            const downloadBtn = document.createElement('a');
+            downloadBtn.href = data.download_url;
+            downloadBtn.textContent = `📥 Download ${data.filename}`;
+            downloadBtn.className = 'inline-block mt-4 bg-green-500 text-white px-6 py-3 rounded-lg hover:bg-green-600 transition-colors font-semibold';
+            downloadBtn.style.textDecoration = 'none';
+            
+            resultDiv.appendChild(downloadBtn);
+        } else {
+            showNotification(data.error || 'Download failed', 'error');
+        }
+    })
+    .catch(error => {
+        hideLoading();
+        showNotification('Network error occurred', 'error');
+        console.error('Download error:', error);
+    });
+}
+
+function clearPreview() {
+    const resultDiv = document.getElementById('result');
+    if (resultDiv) {
+        resultDiv.innerHTML = '';
+    }
+}
+
 // Expose utilities globally for easy access
 window.SocialMediaDownloader = {
     ThemeManager,
@@ -517,5 +619,9 @@ window.SocialMediaDownloader = {
     copyToClipboard,
     showNotification,
     showLoading,
-    hideLoading
+    hideLoading,
+    getVideoInfo,
+    displayVideoPreview,
+    downloadVideo,
+    clearPreview
 };

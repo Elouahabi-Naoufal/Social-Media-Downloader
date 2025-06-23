@@ -96,6 +96,46 @@ def detect_platform(url):
     except Exception:
         return None
 
+def get_video_info(url, platform):
+    """Get video information without downloading"""
+    try:
+        import yt_dlp
+        ydl_opts = {
+            'quiet': True,
+            'no_warnings': True,
+            'extract_flat': False
+        }
+        with yt_dlp.YoutubeDL(ydl_opts) as ydl:
+            info = ydl.extract_info(url, download=False)
+            duration = info.get('duration')
+            duration_str = f"{duration//60}:{duration%60:02d}" if duration else 'Unknown'
+            
+            # Get file size from best format
+            file_size = 'Unknown'
+            if info.get('formats'):
+                for fmt in info['formats']:
+                    if fmt.get('vcodec') != 'none' and fmt.get('acodec') != 'none':
+                        # Try different size fields
+                        size = fmt.get('filesize') or fmt.get('filesize_approx') or fmt.get('http_headers', {}).get('Content-Length')
+                        if size:
+                            file_size = format_file_size(int(size))
+                            break
+                        # Estimate from bitrate and duration
+                        elif fmt.get('tbr') and duration:
+                            estimated_size = int(fmt['tbr'] * 1000 * duration / 8)
+                            file_size = f"~{format_file_size(estimated_size)}"
+                            break
+            
+            return {
+                'success': True,
+                'title': info.get('title', 'Unknown'),
+                'duration': duration_str,
+                'thumbnail': info.get('thumbnail', ''),
+                'file_size': file_size
+            }
+    except Exception as e:
+        return {'success': False, 'error': str(e)}
+
 def download_media(url, platform):
     """Download media using yt-dlp"""
     try:

@@ -52,9 +52,42 @@ def validate_url_route():
     platform = detect_platform(url)
     return jsonify({'valid': True, 'platform': platform})
 
+@app.route('/get-video-info', methods=['POST'])
+def get_video_info():
+    """Get video information without downloading"""
+    try:
+        data = request.get_json()
+        url = data.get('url', '').strip()
+        
+        if not url:
+            return jsonify({'success': False, 'error': 'URL is required'})
+        
+        platform = detect_platform(url)
+        if not platform:
+            return jsonify({'success': False, 'error': 'Unsupported platform'})
+        
+        # Get video info without downloading
+        from utils import get_video_info
+        info = get_video_info(url, platform)
+        
+        if info['success']:
+            return jsonify({
+                'success': True,
+                'title': info.get('title', 'Unknown'),
+                'duration': info.get('duration', 'Unknown'),
+                'thumbnail': info.get('thumbnail', ''),
+                'platform': platform,
+                'file_size': info.get('file_size', 'Unknown')
+            })
+        else:
+            return jsonify({'success': False, 'error': info.get('error', 'Failed to get video info')})
+            
+    except Exception as e:
+        return jsonify({'success': False, 'error': 'Failed to fetch video information'})
+
 @app.route('/download', methods=['POST'])
 def download():
-    """Handle media download"""
+    """Handle media download after user confirms"""
     try:
         data = request.get_json()
         url = data.get('url', '').strip()
@@ -63,19 +96,7 @@ def download():
         if not url:
             return jsonify({'success': False, 'error': 'URL is required'})
         
-        # Validate URL
-        is_valid, error = validate_url(url)
-        if not is_valid:
-            return jsonify({'success': False, 'error': error})
-        
-        # Auto-detect platform if not provided
-        if not platform:
-            platform = detect_platform(url)
-        
-        if not platform:
-            return jsonify({'success': False, 'error': 'Could not detect platform. Please select manually.'})
-        
-        # Download media
+        # Download media to server
         result = download_media(url, platform)
         
         if result['success']:
@@ -91,21 +112,14 @@ def download():
             db.session.add(history_item)
             db.session.commit()
             
-            response_data = {
+            return jsonify({
                 'success': True,
                 'filename': result['filename'],
                 'file_size': result['file_size'],
                 'media_type': result['media_type'],
-                'download_url': url_for('download_file', filename=result['filename'])
-            }
-            
-            # Add optional fields if available
-            if result.get('title'):
-                response_data['title'] = result['title']
-            if result.get('duration'):
-                response_data['duration'] = result['duration']
-                
-            return jsonify(response_data)
+                'download_url': url_for('download_file', filename=result['filename']),
+                'message': 'Video downloaded to server. Click the download link to save to your device.'
+            })
         else:
             return jsonify({'success': False, 'error': result['error']})
             

@@ -52,10 +52,10 @@
                         >
                         <button 
                             type="button" 
-                            id="validateBtn" 
-                            class="absolute right-3 top-1/2 transform -translate-y-1/2 bg-gradient-to-r from-green-500 to-emerald-500 text-white p-2 rounded-xl hover:from-green-600 hover:to-emerald-600 transition-all duration-300 hover:scale-110"
+                            id="searchBtn" 
+                            class="absolute right-3 top-1/2 transform -translate-y-1/2 bg-gradient-to-r from-purple-500 to-pink-500 text-white px-4 py-2 rounded-xl hover:from-purple-600 hover:to-pink-600 transition-all duration-300 hover:scale-110"
                         >
-                            <i class="fas fa-check"></i>
+                            <i class="fas fa-search mr-1"></i>Search
                         </button>
                     </div>
                     <div id="urlError" class="mt-2 text-red-500 text-sm font-medium hidden"></div>
@@ -77,21 +77,7 @@
                     </select>
                 </div>
 
-                <!-- Download Button -->
-                <div class="text-center pt-4">
-                    <button 
-                        type="submit" 
-                        id="downloadBtn" 
-                        class="group relative bg-gradient-to-r from-blue-500 via-purple-500 to-cyan-500 text-white px-12 py-4 rounded-2xl text-lg font-bold shadow-2xl hover:shadow-blue-500/25 transition-all duration-300 hover:scale-105 hover:-translate-y-1"
-                    >
-                        <div class="absolute inset-0 bg-gradient-to-r from-blue-600 via-purple-600 to-cyan-600 rounded-2xl opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
-                        <div class="relative flex items-center space-x-3">
-                            <i class="fas fa-download text-xl"></i>
-                            <span>Download Media</span>
-                            <i class="fas fa-sparkles text-yellow-300 animate-pulse"></i>
-                        </div>
-                    </button>
-                </div>
+
             </form>
         </div>
     </div>
@@ -177,9 +163,10 @@ document.addEventListener('DOMContentLoaded', function() {
     const urlError = document.getElementById('urlError');
     const urlSuccess = document.getElementById('urlSuccess');
 
-    // URL validation
-    validateBtn.addEventListener('click', function() {
-        validateUrl();
+    // Search functionality
+    const searchBtn = document.getElementById('searchBtn');
+    searchBtn.addEventListener('click', function() {
+        searchVideo();
     });
 
     urlInput.addEventListener('input', function() {
@@ -190,7 +177,7 @@ document.addEventListener('DOMContentLoaded', function() {
         resultCard.classList.add('hidden');
     });
 
-    function validateUrl() {
+    function searchVideo() {
         const url = urlInput.value.trim();
         
         if (!url) {
@@ -198,9 +185,9 @@ document.addEventListener('DOMContentLoaded', function() {
             return;
         }
 
-        showLoading();
+        showLoading('Searching for video...');
 
-        fetch('/validate-url', {
+        fetch('/get-video-info', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
@@ -211,19 +198,16 @@ document.addEventListener('DOMContentLoaded', function() {
         .then(data => {
             hideLoading();
             
-            if (data.valid) {
-                showUrlSuccess('Valid URL detected');
-                if (data.platform) {
-                    platformSelect.value = data.platform;
-                    showPlatformDetected(data.platform);
-                }
+            if (data.success) {
+                showVideoPreview(data, url);
+                showUrlSuccess('Video found!');
             } else {
                 showUrlError(data.error);
             }
         })
         .catch(error => {
             hideLoading();
-            showUrlError('Validation failed. Please check your connection.');
+            showUrlError('Search failed. Please check your connection.');
         });
     }
 
@@ -248,22 +232,35 @@ document.addEventListener('DOMContentLoaded', function() {
         showNotification(`Platform detected: ${platformName}`, 'success');
     }
 
-    // Form submission
-    form.addEventListener('submit', function(e) {
-        e.preventDefault();
+    function showVideoPreview(data, url) {
+        const thumbnail = data.thumbnail || '/static/images/video-placeholder.png';
         
-        const url = urlInput.value.trim();
-        const platform = platformSelect.value;
+        resultContent.innerHTML = `
+            <div class="bg-gradient-to-r from-gray-50 to-blue-50 rounded-2xl border border-gray-200 p-6">
+                <div class="flex items-start space-x-6">
+                    <div class="flex-shrink-0">
+                        <img src="${thumbnail}" alt="Video thumbnail" class="w-32 h-24 object-cover rounded-lg shadow-lg" onerror="this.src='/static/images/video-placeholder.png'">
+                        <div class="text-center mt-2 text-sm text-gray-600">${data.duration}</div>
+                    </div>
+                    <div class="flex-1">
+                        <h3 class="text-lg font-semibold text-gray-800 mb-2">${data.title}</h3>
+                        <div class="text-sm text-gray-600 space-y-1 mb-4">
+                            <p><i class="fas fa-globe mr-2"></i>Platform: ${data.platform}</p>
+                            <p><i class="fas fa-hdd mr-2"></i>Size: ${data.file_size}</p>
+                        </div>
+                        <button onclick="downloadVideo('${url}', '${data.platform}')" class="bg-gradient-to-r from-blue-500 to-cyan-500 text-white px-6 py-3 rounded-lg hover:from-blue-600 hover:to-cyan-600 transition-colors font-semibold">
+                            <i class="fas fa-download mr-2"></i>Download Video
+                        </button>
+                    </div>
+                </div>
+            </div>
+        `;
+        
+        resultCard.classList.remove('hidden');
+        resultCard.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    }
 
-        if (!url) {
-            showUrlError('Please enter a URL');
-            return;
-        }
-
-        downloadMedia(url, platform);
-    });
-
-    function downloadMedia(url, platform) {
+    window.downloadVideo = function(url, platform) {
         showLoading('Downloading media...');
         
         // Disable form
@@ -291,7 +288,7 @@ document.addEventListener('DOMContentLoaded', function() {
             hideLoading();
             
             if (data.success) {
-                showDownloadResult(data);
+                showDownloadComplete(data);
                 showNotification('Download completed successfully!', 'success');
             } else {
                 showNotification(data.error, 'error');
@@ -300,21 +297,10 @@ document.addEventListener('DOMContentLoaded', function() {
         .catch(error => {
             hideLoading();
             showNotification('Download failed. Please try again.', 'error');
-        })
-        .finally(() => {
-            // Re-enable form
-            downloadBtn.disabled = false;
-            downloadBtn.innerHTML = `
-                <div class="relative flex items-center space-x-3">
-                    <i class="fas fa-download text-xl"></i>
-                    <span>Download Media</span>
-                    <i class="fas fa-sparkles text-yellow-300 animate-pulse"></i>
-                </div>
-            `;
         });
     }
 
-    function showDownloadResult(data) {
+    function showDownloadComplete(data) {
         const fileSize = formatFileSize(data.file_size);
         const mediaIcon = data.media_type === 'video' ? 'fas fa-video' : 'fas fa-image';
         const mediaColor = data.media_type === 'video' ? 'text-blue-500' : 'text-green-500';
