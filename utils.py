@@ -29,7 +29,8 @@ class Blog(db.Model):
     id = Column(Integer, primary_key=True)
     title = Column(String(200), nullable=False)
     slug = Column(String(200), nullable=False, unique=True)
-    content = Column(db.Text, nullable=False)
+    content = Column(db.Text, nullable=False)  # Processed HTML
+    raw_content = Column(db.Text, nullable=False)  # Original markdown
     excerpt = Column(String(300))
     published = Column(db.Boolean, default=False)
     created_at = Column(DateTime, default=datetime.utcnow)

@@ -58,7 +58,7 @@
                     </div>
                     <textarea id="content" name="content" rows="25" required
                               class="w-full px-4 py-3 border-0 focus:ring-0 resize-none font-mono text-sm"
-                              placeholder="Write your blog post content here using Markdown...">{% if blog %}{{ blog.content }}{% endif %}</textarea>
+                              placeholder="Write your blog post content here using Markdown...">{% if blog %}{{ blog.raw_content }}{% endif %}</textarea>
                 </div>
                 
                 <!-- Preview -->

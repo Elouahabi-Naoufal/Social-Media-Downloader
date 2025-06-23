@@ -11,6 +11,7 @@ from flask import send_file
 import re
 import uuid
 from io import BytesIO
+import mistune
 
 # Admin credentials (in production, use environment variables)
 ADMIN_USERNAME = os.environ.get('ADMIN_USERNAME', 'admin')
@@ -333,10 +334,14 @@ def admin_blog_new():
         slug = re.sub(r'[^\w\s-]', '', title.lower())
         slug = re.sub(r'[-\s]+', '-', slug)
         
+        # Process markdown to HTML with mistune
+        html_content = mistune.html(content)
+        
         blog = Blog(
             title=title,
             slug=slug,
-            content=content,  # Store raw content
+            content=html_content,
+            raw_content=content,
             excerpt=excerpt,
             published=published
         )
@@ -355,8 +360,13 @@ def admin_blog_edit(blog_id):
     blog = Blog.query.get_or_404(blog_id)
     
     if request.method == 'POST':
+        content = request.form.get('content')
+        # Process markdown to HTML with mistune
+        html_content = mistune.html(content)
+        
         blog.title = request.form.get('title')
-        blog.content = request.form.get('content')  # Store raw content
+        blog.content = html_content
+        blog.raw_content = content
         blog.excerpt = request.form.get('excerpt')
         blog.published = bool(request.form.get('published'))
         blog.updated_at = datetime.utcnow()
