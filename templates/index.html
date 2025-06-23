@@ -233,23 +233,53 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 
     function showVideoPreview(data, url) {
-        const thumbnail = data.thumbnail || '/static/images/video-placeholder.png';
+        const hasThumbnail = data.thumbnail && data.thumbnail !== '';
+        
+        // Quality options are now hardcoded in HTML
         
         resultContent.innerHTML = `
             <div class="bg-gradient-to-r from-gray-50 to-blue-50 rounded-2xl border border-gray-200 p-6">
-                <div class="flex items-start space-x-6">
+                <div class="flex items-start space-x-6 mb-6">
                     <div class="flex-shrink-0">
-                        <img src="${thumbnail}" alt="Video thumbnail" class="w-32 h-24 object-cover rounded-lg shadow-lg" onerror="this.src='/static/images/video-placeholder.png'">
+                        ${hasThumbnail ? 
+                            `<img src="${data.thumbnail}" alt="Video thumbnail" class="w-32 h-24 object-cover rounded-lg shadow-lg" onerror="this.style.display='none'; this.nextElementSibling.style.display='flex'"><div class="w-32 h-24 bg-gray-300 rounded-lg flex items-center justify-center" style="display:none"><i class="fas fa-video text-gray-500 text-2xl"></i></div>` :
+                            `<div class="w-32 h-24 bg-gray-300 rounded-lg flex items-center justify-center"><i class="fas fa-video text-gray-500 text-2xl"></i></div>`
+                        }
                         <div class="text-center mt-2 text-sm text-gray-600">${data.duration}</div>
                     </div>
                     <div class="flex-1">
                         <h3 class="text-lg font-semibold text-gray-800 mb-2">${data.title}</h3>
-                        <div class="text-sm text-gray-600 space-y-1 mb-4">
+                        <div class="text-sm text-gray-600 space-y-1">
                             <p><i class="fas fa-globe mr-2"></i>Platform: ${data.platform}</p>
                             <p><i class="fas fa-hdd mr-2"></i>Size: ${data.file_size}</p>
                         </div>
-                        <button onclick="downloadVideo('${url}', '${data.platform}')" class="bg-gradient-to-r from-blue-500 to-cyan-500 text-white px-6 py-3 rounded-lg hover:from-blue-600 hover:to-cyan-600 transition-colors font-semibold">
+                    </div>
+                </div>
+                
+                <div class="grid md:grid-cols-2 gap-4">
+                    <div class="bg-white p-4 rounded-lg border">
+                        <h4 class="font-semibold text-gray-800 mb-3"><i class="fas fa-video mr-2 text-blue-500"></i>Video Quality (MP4)</h4>
+                        <select id="videoQuality" class="w-full p-2 border rounded mb-3">
+                            <option value="">Select video quality</option>
+                            <option value="best[height<=1080]">Best (1080p) MP4</option>
+                            <option value="best[height<=720]">Medium (720p) MP4</option>
+                            <option value="best[height<=480]">Low (480p) MP4</option>
+                        </select>
+                        <button onclick="downloadWithQuality('${url}', '${data.platform}', 'video')" class="w-full bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600 transition-colors">
                             <i class="fas fa-download mr-2"></i>Download Video
+                        </button>
+                    </div>
+                    
+                    <div class="bg-white p-4 rounded-lg border">
+                        <h4 class="font-semibold text-gray-800 mb-3"><i class="fas fa-music mr-2 text-green-500"></i>Audio Quality (MP3)</h4>
+                        <select id="audioQuality" class="w-full p-2 border rounded mb-3">
+                            <option value="">Select audio quality</option>
+                            <option value="bestaudio[abr>=128]">Best (320k) MP3</option>
+                            <option value="bestaudio[abr>=96]">Medium (128k) MP3</option>
+                            <option value="bestaudio[abr>=64]">Low (64k) MP3</option>
+                        </select>
+                        <button onclick="downloadWithQuality('${url}', '${data.platform}', 'audio')" class="w-full bg-green-500 text-white px-4 py-2 rounded hover:bg-green-600 transition-colors">
+                            <i class="fas fa-download mr-2"></i>Download Audio
                         </button>
                     </div>
                 </div>
@@ -260,6 +290,65 @@ document.addEventListener('DOMContentLoaded', function() {
         resultCard.scrollIntoView({ behavior: 'smooth', block: 'center' });
     }
 
+    window.downloadWithQuality = function(url, platform, type) {
+        const formatSelect = type === 'video' ? document.getElementById('videoQuality') : document.getElementById('audioQuality');
+        const formatId = formatSelect.value;
+        
+        if (!formatId) {
+            showNotification('Please select a quality option', 'warning');
+            return;
+        }
+        
+        showLoading(`Downloading ${type}...`);
+        
+        fetch('/download', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({ 
+                url: url, 
+                platform: platform,
+                format_id: formatId,
+                type: type
+            })
+        })
+        .then(response => response.json())
+        .then(data => {
+            hideLoading();
+            
+            if (data.success) {
+                showNotification(data.message || `${type} downloaded successfully!`, 'success');
+                
+                const resultDiv = document.getElementById('resultContent');
+                const downloadBtn = document.createElement('a');
+                downloadBtn.href = data.download_url;
+                downloadBtn.textContent = `📥 Download ${data.filename}`;
+                downloadBtn.className = 'inline-block mt-4 bg-green-500 text-white px-6 py-3 rounded-lg hover:bg-green-600 transition-colors font-semibold';
+                downloadBtn.style.textDecoration = 'none';
+                
+                if (resultDiv) {
+                    resultDiv.appendChild(downloadBtn);
+                }
+            } else {
+                showNotification(data.error || 'Download failed', 'error');
+            }
+        })
+        .catch(error => {
+            hideLoading();
+            showNotification('Network error occurred', 'error');
+            console.error('Download error:', error);
+        });
+    };
+    
+    function formatFileSize(bytes) {
+        if (!bytes) return '';
+        const k = 1024;
+        const sizes = ['Bytes', 'KB', 'MB', 'GB'];
+        const i = Math.floor(Math.log(bytes) / Math.log(k));
+        return parseFloat((bytes / Math.pow(k, i)).toFixed(1)) + ' ' + sizes[i];
+    }
+    
     window.downloadVideo = function(url, platform) {
         showLoading('Downloading media...');
         
