@@ -98,6 +98,14 @@
                             <i class="fas fa-history"></i>
                             <span class="font-medium">History</span>
                         </a>
+                        <a href="{{ url_for('privacy_policy') }}" class="flex items-center space-x-2 px-3 py-2 rounded-lg text-gray-700 dark:text-gray-300 hover:text-blue-600 dark:hover:text-blue-400 hover:bg-blue-50 dark:hover:bg-gray-800 transition-all duration-200">
+                            <i class="fas fa-shield-alt"></i>
+                            <span class="font-medium">Privacy</span>
+                        </a>
+                        <a href="{{ url_for('terms_conditions') }}" class="flex items-center space-x-2 px-3 py-2 rounded-lg text-gray-700 dark:text-gray-300 hover:text-blue-600 dark:hover:text-blue-400 hover:bg-blue-50 dark:hover:bg-gray-800 transition-all duration-200">
+                            <i class="fas fa-file-contract"></i>
+                            <span class="font-medium">Terms</span>
+                        </a>
                     </div>
                 </div>
                 
@@ -127,6 +135,14 @@
                     <a href="{{ url_for('history') }}" class="flex items-center space-x-2 px-3 py-2 rounded-lg text-gray-700 dark:text-gray-300 hover:text-blue-600 dark:hover:text-blue-400 hover:bg-blue-50 dark:hover:bg-gray-800">
                         <i class="fas fa-history"></i>
                         <span>History</span>
+                    </a>
+                    <a href="{{ url_for('privacy_policy') }}" class="flex items-center space-x-2 px-3 py-2 rounded-lg text-gray-700 dark:text-gray-300 hover:text-blue-600 dark:hover:text-blue-400 hover:bg-blue-50 dark:hover:bg-gray-800">
+                        <i class="fas fa-shield-alt"></i>
+                        <span>Privacy</span>
+                    </a>
+                    <a href="{{ url_for('terms_conditions') }}" class="flex items-center space-x-2 px-3 py-2 rounded-lg text-gray-700 dark:text-gray-300 hover:text-blue-600 dark:hover:text-blue-400 hover:bg-blue-50 dark:hover:bg-gray-800">
+                        <i class="fas fa-file-contract"></i>
+                        <span>Terms</span>
                     </a>
                 </div>
             </div>
@@ -198,8 +214,14 @@
                     </div>
                 </div>
             </div>
-            <div class="border-t border-gray-700 mt-8 pt-8 text-center text-gray-400">
-                <p>&copy; 2024 Social Media Downloader. Built with ❤️ for content creators.</p>
+            <div class="border-t border-gray-700 mt-8 pt-8">
+                <div class="flex flex-col md:flex-row justify-between items-center">
+                    <p class="text-gray-400 mb-4 md:mb-0">&copy; 2024 Social Media Downloader. Built with ❤️ for content creators.</p>
+                    <div class="flex space-x-6">
+                        <a href="{{ url_for('privacy_policy') }}" class="text-gray-400 hover:text-white transition-colors">Privacy Policy</a>
+                        <a href="{{ url_for('terms_conditions') }}" class="text-gray-400 hover:text-white transition-colors">Terms & Conditions</a>
+                    </div>
+                </div>
             </div>
         </div>
     </footer>

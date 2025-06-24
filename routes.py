@@ -261,6 +261,16 @@ def blog_detail(slug):
     blog = Blog.query.filter_by(slug=slug, published=True).first_or_404()
     return render_template('blog/detail.html', blog=blog)
 
+@app.route('/privacy')
+def privacy_policy():
+    """Privacy policy page"""
+    return render_template('privacy.html')
+
+@app.route('/terms')
+def terms_conditions():
+    """Terms and conditions page"""
+    return render_template('terms.html')
+
 @app.errorhandler(500)
 def internal_error(error):
     db.session.rollback()
