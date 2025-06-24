@@ -337,12 +337,22 @@ def admin_blog_new():
         # Process markdown to HTML with mistune
         html_content = mistune.html(content)
         
+        # Handle thumbnail upload
+        thumbnail_data = None
+        thumbnail_mime_type = None
+        thumbnail_file = request.files.get('thumbnail')
+        if thumbnail_file and thumbnail_file.filename and thumbnail_file.content_type.startswith('image/'):
+            thumbnail_data = thumbnail_file.read()
+            thumbnail_mime_type = thumbnail_file.content_type
+        
         blog = Blog(
             title=title,
             slug=slug,
             content=html_content,
             raw_content=content,
             excerpt=excerpt,
+            thumbnail_data=thumbnail_data,
+            thumbnail_mime_type=thumbnail_mime_type,
             published=published
         )
         db.session.add(blog)
@@ -368,6 +378,13 @@ def admin_blog_edit(blog_id):
         blog.content = html_content
         blog.raw_content = content
         blog.excerpt = request.form.get('excerpt')
+        
+        # Handle thumbnail upload
+        thumbnail_file = request.files.get('thumbnail')
+        if thumbnail_file and thumbnail_file.filename and thumbnail_file.content_type.startswith('image/'):
+            blog.thumbnail_data = thumbnail_file.read()
+            blog.thumbnail_mime_type = thumbnail_file.content_type
+        
         blog.published = bool(request.form.get('published'))
         blog.updated_at = datetime.utcnow()
         
@@ -451,6 +468,24 @@ def serve_image(filename):
         return response
     except Exception as e:
         return "Image not found", 404
+
+@app.route('/blog-thumbnail/<int:blog_id>')
+def serve_blog_thumbnail(blog_id):
+    """Serve blog thumbnail from database"""
+    try:
+        blog = Blog.query.get_or_404(blog_id)
+        if not blog.thumbnail_data:
+            return "No thumbnail", 404
+        
+        response = send_file(
+            BytesIO(blog.thumbnail_data),
+            mimetype=blog.thumbnail_mime_type,
+            as_attachment=False
+        )
+        response.headers['Cache-Control'] = 'public, max-age=31536000'
+        return response
+    except Exception as e:
+        return "Thumbnail not found", 404
 
 @app.route('/admin/api/delete-blog/<int:blog_id>', methods=['DELETE'])
 @admin_required

@@ -32,6 +32,8 @@ class Blog(db.Model):
     content = Column(db.Text, nullable=False)  # Processed HTML
     raw_content = Column(db.Text, nullable=False)  # Original markdown
     excerpt = Column(String(300))
+    thumbnail_data = Column(db.LargeBinary)
+    thumbnail_mime_type = Column(String(100))
     published = Column(db.Boolean, default=False)
     created_at = Column(DateTime, default=datetime.utcnow)
     updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
