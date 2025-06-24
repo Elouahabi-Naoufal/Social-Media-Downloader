@@ -5,7 +5,7 @@ from functools import wraps
 from flask import render_template, request, jsonify, session, redirect, url_for, flash
 from sqlalchemy import func, desc, and_
 from app import app, db
-from utils import DownloadHistory, Blog, Image, format_file_size
+from utils import DownloadHistory, Blog, Image, LegalPage, format_file_size
 from app import db
 from flask import send_file
 import re
@@ -506,6 +506,166 @@ def admin_delete_blog(blog_id):
         return jsonify({'success': True})
     except Exception as e:
         return jsonify({'success': False, 'error': str(e)}), 500
+
+@app.route('/admin/legal')
+@admin_required
+def admin_legal():
+    """Admin legal pages management"""
+    # Ensure Privacy and Terms pages exist
+    privacy = LegalPage.query.filter_by(slug='privacy-policy').first()
+    if not privacy:
+        privacy = LegalPage(
+            title='Privacy Policy',
+            slug='privacy-policy',
+            content='<p>Privacy policy content goes here.</p>',
+            raw_content='Privacy policy content goes here.',
+            published=False
+        )
+        db.session.add(privacy)
+    
+    terms = LegalPage.query.filter_by(slug='terms-of-service').first()
+    if not terms:
+        terms = LegalPage(
+            title='Terms of Service',
+            slug='terms-of-service',
+            content='<p>Terms of service content goes here.</p>',
+            raw_content='Terms of service content goes here.',
+            published=False
+        )
+        db.session.add(terms)
+    
+    db.session.commit()
+    
+    legal_pages = [privacy, terms]
+    return render_template('admin/legal.html', legal_pages=legal_pages)
+
+@app.route('/admin/legal/new', methods=['GET', 'POST'])
+@admin_required
+def admin_legal_new():
+    """Create new legal page"""
+    if request.method == 'POST':
+        title = request.form.get('title')
+        content = request.form.get('content')
+        excerpt = request.form.get('excerpt')
+        published = bool(request.form.get('published'))
+        
+        # Generate slug from title
+        slug = re.sub(r'[^\w\s-]', '', title.lower())
+        slug = re.sub(r'[-\s]+', '-', slug)
+        
+        # Process markdown to HTML with mistune
+        html_content = mistune.html(content)
+        
+        # Handle thumbnail upload
+        thumbnail_data = None
+        thumbnail_mime_type = None
+        thumbnail_file = request.files.get('thumbnail')
+        if thumbnail_file and thumbnail_file.filename and thumbnail_file.content_type.startswith('image/'):
+            thumbnail_data = thumbnail_file.read()
+            thumbnail_mime_type = thumbnail_file.content_type
+        
+        thumbnail_style = request.form.get('thumbnail_style', 'cover')
+        thumbnail_height = int(request.form.get('thumbnail_height', 192))
+        
+        legal_page = LegalPage(
+            title=title,
+            slug=slug,
+            content=html_content,
+            raw_content=content,
+            excerpt=excerpt,
+            thumbnail_data=thumbnail_data,
+            thumbnail_mime_type=thumbnail_mime_type,
+            thumbnail_style=thumbnail_style,
+            thumbnail_height=thumbnail_height,
+            published=published
+        )
+        db.session.add(legal_page)
+        db.session.commit()
+        
+        flash('Legal page created successfully!', 'success')
+        return redirect(url_for('admin_legal'))
+    
+    return render_template('admin/legal_form.html')
+
+@app.route('/admin/legal/edit/<int:legal_id>', methods=['GET', 'POST'])
+@admin_required
+def admin_legal_edit(legal_id):
+    """Edit legal page"""
+    legal_page = LegalPage.query.get_or_404(legal_id)
+    
+    if request.method == 'POST':
+        content = request.form.get('content')
+        # Process markdown to HTML with mistune
+        html_content = mistune.html(content)
+        
+        legal_page.title = request.form.get('title')
+        legal_page.content = html_content
+        legal_page.raw_content = content
+        legal_page.excerpt = request.form.get('excerpt')
+        
+        # Handle thumbnail upload
+        thumbnail_file = request.files.get('thumbnail')
+        if thumbnail_file and thumbnail_file.filename and thumbnail_file.content_type.startswith('image/'):
+            legal_page.thumbnail_data = thumbnail_file.read()
+            legal_page.thumbnail_mime_type = thumbnail_file.content_type
+        
+        legal_page.thumbnail_style = request.form.get('thumbnail_style', 'cover')
+        legal_page.thumbnail_height = int(request.form.get('thumbnail_height', 192))
+        
+        legal_page.published = bool(request.form.get('published'))
+        legal_page.updated_at = datetime.utcnow()
+        
+        # Update slug
+        slug = re.sub(r'[^\w\s-]', '', legal_page.title.lower())
+        legal_page.slug = re.sub(r'[-\s]+', '-', slug)
+        
+        db.session.commit()
+        flash('Legal page updated successfully!', 'success')
+        return redirect(url_for('admin_legal'))
+    
+    return render_template('admin/legal_form.html', legal_page=legal_page)
+
+@app.route('/admin/api/toggle-legal/<int:legal_id>', methods=['POST'])
+@admin_required
+def admin_toggle_legal(legal_id):
+    """Toggle legal page publish status"""
+    try:
+        legal_page = LegalPage.query.get_or_404(legal_id)
+        legal_page.published = not legal_page.published
+        db.session.commit()
+        return jsonify({'success': True, 'published': legal_page.published})
+    except Exception as e:
+        return jsonify({'success': False, 'error': str(e)}), 500
+
+@app.route('/admin/api/delete-legal/<int:legal_id>', methods=['DELETE'])
+@admin_required
+def admin_delete_legal(legal_id):
+    """Delete legal page"""
+    try:
+        legal_page = LegalPage.query.get_or_404(legal_id)
+        db.session.delete(legal_page)
+        db.session.commit()
+        return jsonify({'success': True})
+    except Exception as e:
+        return jsonify({'success': False, 'error': str(e)}), 500
+
+@app.route('/legal-thumbnail/<int:legal_id>')
+def serve_legal_thumbnail(legal_id):
+    """Serve legal page thumbnail from database"""
+    try:
+        legal_page = LegalPage.query.get_or_404(legal_id)
+        if not legal_page.thumbnail_data:
+            return "No thumbnail", 404
+        
+        response = send_file(
+            BytesIO(legal_page.thumbnail_data),
+            mimetype=legal_page.thumbnail_mime_type,
+            as_attachment=False
+        )
+        response.headers['Cache-Control'] = 'public, max-age=31536000'
+        return response
+    except Exception as e:
+        return "Thumbnail not found", 404
 
 @app.route('/admin/settings')
 @admin_required

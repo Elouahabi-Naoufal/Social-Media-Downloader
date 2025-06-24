@@ -73,6 +73,11 @@
                     Blog
                 </a>
                 
+                <a href="{{ url_for('admin_legal') }}" class="flex items-center px-4 py-3 text-gray-700 rounded-lg hover:bg-admin-50 hover:text-admin-600 transition-colors duration-200 {% if request.endpoint in ['admin_legal', 'admin_legal_new', 'admin_legal_edit'] %}bg-admin-50 text-admin-600 border-r-2 border-admin-600{% endif %}">
+                    <i class="fas fa-file-contract mr-3"></i>
+                    Legal Pages
+                </a>
+                
                 <a href="{{ url_for('admin_settings') }}" class="flex items-center px-4 py-3 text-gray-700 rounded-lg hover:bg-admin-50 hover:text-admin-600 transition-colors duration-200 {% if request.endpoint == 'admin_settings' %}bg-admin-50 text-admin-600 border-r-2 border-admin-600{% endif %}">
                     <i class="fas fa-cog mr-3"></i>
                     Settings

@@ -1,0 +1,66 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="max-w-4xl mx-auto">
+    <!-- Hero Section -->
+    <div class="text-center mb-12">
+        <h1 class="text-4xl font-bold mb-4">
+            <span class="bg-gradient-to-r from-blue-600 to-cyan-600 dark:from-blue-400 dark:to-cyan-400 bg-clip-text text-transparent">
+                <i class="fas fa-file-contract mr-3"></i>Legal Pages
+            </span>
+        </h1>
+        <p class="text-xl text-gray-600 dark:text-gray-300">Important legal information and policies</p>
+    </div>
+
+    <!-- Legal Pages -->
+    {% if legal_pages %}
+        <div class="space-y-8">
+            {% for legal_page in legal_pages %}
+            <article class="bg-white dark:bg-gray-800 rounded-xl shadow-lg hover:shadow-xl transition-all duration-300 overflow-hidden">
+                <div class="flex h-36">
+                    {% if legal_page.thumbnail_data %}
+                    <div class="w-1/4 overflow-hidden">
+                        <img src="/legal-thumbnail/{{ legal_page.id }}" alt="{{ legal_page.title }}" 
+                             class="w-full h-full object-cover hover:scale-105 transition-transform duration-300">
+                    </div>
+                    <div class="w-3/4 p-4 flex flex-col justify-between">
+                    {% else %}
+                    <div class="w-full p-4 flex flex-col justify-between">
+                    {% endif %}
+                        <div>
+                            <div class="flex items-center justify-between mb-2">
+                                <time class="text-xs text-gray-500 dark:text-gray-400">{{ legal_page.created_at.strftime('%B %d, %Y') }}</time>
+                            </div>
+                            
+                            <h2 class="text-lg font-bold text-gray-800 dark:text-white mb-2 line-clamp-2">
+                                <a href="{{ url_for('legal_detail', slug=legal_page.slug) }}" class="hover:text-blue-600 dark:hover:text-blue-400 transition-colors">
+                                    {{ legal_page.title }}
+                                </a>
+                            </h2>
+                            
+                            {% if legal_page.excerpt %}
+                            <p class="text-sm text-gray-600 dark:text-gray-300 mb-3 line-clamp-2">{{ legal_page.excerpt }}</p>
+                            {% endif %}
+                        </div>
+                        
+                        <a href="{{ url_for('legal_detail', slug=legal_page.slug) }}" 
+                           class="inline-flex items-center justify-center bg-blue-500 hover:bg-blue-600 text-white w-8 h-8 rounded-full transition-colors duration-200">
+                            <i class="fas fa-arrow-right"></i>
+                        </a>
+                    </div>
+                </div>
+            </article>
+            {% endfor %}
+        </div>
+    {% else %}
+        <!-- Empty State -->
+        <div class="text-center py-16">
+            <div class="bg-gray-100 dark:bg-gray-700 w-24 h-24 mx-auto rounded-full flex items-center justify-center mb-6">
+                <i class="fas fa-file-contract text-gray-400 dark:text-gray-500 text-3xl"></i>
+            </div>
+            <h2 class="text-2xl font-bold text-gray-800 dark:text-white mb-4">No Legal Pages Yet</h2>
+            <p class="text-gray-600 dark:text-gray-300">Legal information will be available here soon!</p>
+        </div>
+    {% endif %}
+</div>
+{% endblock %}

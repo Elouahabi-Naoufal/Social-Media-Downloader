@@ -52,6 +52,24 @@ class Image(db.Model):
     data = Column(db.LargeBinary, nullable=False)
     created_at = Column(DateTime, default=datetime.utcnow)
 
+class LegalPage(db.Model):
+    """Model for legal pages"""
+    __tablename__ = 'legal_pages'
+    
+    id = Column(Integer, primary_key=True)
+    title = Column(String(200), nullable=False)
+    slug = Column(String(200), nullable=False, unique=True)
+    content = Column(db.Text, nullable=False)  # Processed HTML
+    raw_content = Column(db.Text, nullable=False)  # Original markdown
+    excerpt = Column(String(300))
+    thumbnail_data = Column(db.LargeBinary)
+    thumbnail_mime_type = Column(String(100))
+    thumbnail_style = Column(String(20), default='cover')
+    thumbnail_height = Column(Integer, default=192)
+    published = Column(db.Boolean, default=False)
+    created_at = Column(DateTime, default=datetime.utcnow)
+    updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+
 def validate_url(url):
     """Validate if URL is properly formatted and accessible"""
     try:

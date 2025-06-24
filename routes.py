@@ -17,7 +17,8 @@ from utils import (
     get_file_info,
     DownloadHistory,
     Blog,
-    Image
+    Image,
+    LegalPage
 )
 from utils_direct import get_direct_download_url
 
@@ -264,12 +265,30 @@ def blog_detail(slug):
 @app.route('/privacy')
 def privacy_policy():
     """Privacy policy page"""
-    return render_template('privacy.html')
+    privacy = LegalPage.query.filter_by(slug='privacy-policy', published=True).first_or_404()
+    return render_template('legal/detail.html', legal_page=privacy)
 
 @app.route('/terms')
 def terms_conditions():
     """Terms and conditions page"""
-    return render_template('terms.html')
+    terms = LegalPage.query.filter_by(slug='terms-of-service', published=True).first_or_404()
+    return render_template('legal/detail.html', legal_page=terms)
+
+@app.route('/legal')
+def legal_list():
+    """Legal pages listing page"""
+    try:
+        legal_pages = LegalPage.query.all()
+        published = [p for p in legal_pages if p.published]
+        return render_template('legal/list.html', legal_pages=published)
+    except Exception as e:
+        return render_template('legal/list.html', legal_pages=[])
+
+@app.route('/legal/<slug>')
+def legal_detail(slug):
+    """Legal page detail page"""
+    legal_page = LegalPage.query.filter_by(slug=slug, published=True).first_or_404()
+    return render_template('legal/detail.html', legal_page=legal_page)
 
 @app.errorhandler(500)
 def internal_error(error):
