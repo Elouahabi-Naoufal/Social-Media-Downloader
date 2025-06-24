@@ -269,14 +269,14 @@ document.addEventListener('DOMContentLoaded', function() {
                 
                 <div class="grid md:grid-cols-2 gap-4">
                     <div class="bg-white dark:bg-gray-800 p-4 rounded-lg border dark:border-gray-600 transition-colors duration-300">
-                        <h4 class="font-semibold text-gray-800 dark:text-white mb-3"><i class="fas fa-video mr-2 text-blue-500"></i>Video Quality (MP4)</h4>
+                        <h4 class="font-semibold text-gray-800 dark:text-white mb-3"><i class="fas fa-video mr-2 text-blue-500"></i>Video (MP4)</h4>
                         <button onclick="downloadWithQuality('${url}', '${data.platform}', 'video')" class="w-full bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600 transition-colors">
                             <i class="fas fa-download mr-2"></i>Download Video
                         </button>
                     </div>
                     
                     <div class="bg-white dark:bg-gray-800 p-4 rounded-lg border dark:border-gray-600 transition-colors duration-300">
-                        <h4 class="font-semibold text-gray-800 dark:text-white mb-3"><i class="fas fa-music mr-2 text-green-500"></i>Audio Quality (MP3)</h4>
+                        <h4 class="font-semibold text-gray-800 dark:text-white mb-3"><i class="fas fa-music mr-2 text-green-500"></i>Audio (MP3)</h4>
                         <button onclick="downloadWithQuality('${url}', '${data.platform}', 'audio')" class="w-full bg-green-500 text-white px-4 py-2 rounded hover:bg-green-600 transition-colors">
                             <i class="fas fa-download mr-2"></i>Download Audio
                         </button>
@@ -292,7 +292,39 @@ document.addEventListener('DOMContentLoaded', function() {
     window.downloadWithQuality = function(url, platform, type) {
         const formatId = type === 'video' ? 'best' : 'bestaudio';
         
-        showLoading(`Downloading ${type}...`);
+        // Create progress bar
+        const progressId = `progress-${type}-${Date.now()}`;
+        const progressHtml = `
+            <div id="${progressId}" class="mt-4 p-4 bg-gray-50 dark:bg-gray-700 rounded-lg">
+                <div class="flex items-center justify-between mb-2">
+                    <span class="text-sm font-medium text-gray-700 dark:text-gray-300">
+                        ${type === 'video' ? 'Video' : 'Audio'} Download Progress
+                    </span>
+                    <span class="text-sm text-gray-500 dark:text-gray-400" id="${progressId}-status">Starting...</span>
+                </div>
+                <div class="w-full bg-gray-200 dark:bg-gray-600 rounded-full h-2">
+                    <div id="${progressId}-bar" class="${type === 'video' ? 'bg-blue-500' : 'bg-green-500'} h-2 rounded-full transition-all duration-300" style="width: 0%"></div>
+                </div>
+                <div class="text-xs text-gray-500 dark:text-gray-400 mt-1">
+                    Your ${type} is being downloaded on the server at the highest quality. Once ready, clicking the ${type} link will start an instant download.
+                </div>
+            </div>
+        `;
+        
+        const resultDiv = document.getElementById('resultContent');
+        resultDiv.insertAdjacentHTML('beforeend', progressHtml);
+        
+        // Simulate progress
+        const progressBar = document.getElementById(`${progressId}-bar`);
+        const progressStatus = document.getElementById(`${progressId}-status`);
+        let progress = 0;
+        
+        const progressInterval = setInterval(() => {
+            progress += Math.random() * 15;
+            if (progress > 90) progress = 90;
+            progressBar.style.width = progress + '%';
+            progressStatus.textContent = Math.round(progress) + '%';
+        }, 500);
         
         fetch('/download', {
             method: 'POST',
@@ -308,57 +340,34 @@ document.addEventListener('DOMContentLoaded', function() {
         })
         .then(response => response.json())
         .then(data => {
-            hideLoading();
+            clearInterval(progressInterval);
+            progressBar.style.width = '100%';
+            progressStatus.textContent = 'Complete!';
             
             if (data.success) {
-                if (data.direct_download && type === 'video') {
-                    // Force download by fetching as blob
-                    showNotification('Starting video download...', 'info');
-                    
-                    fetch(data.download_url)
-                        .then(response => response.blob())
-                        .then(blob => {
-                            const url = window.URL.createObjectURL(blob);
-                            const link = document.createElement('a');
-                            link.href = url;
-                            link.download = data.filename;
-                            link.style.display = 'none';
-                            document.body.appendChild(link);
-                            link.click();
-                            document.body.removeChild(link);
-                            window.URL.revokeObjectURL(url);
-                            showNotification('Video download started!', 'success');
-                        })
-                        .catch(error => {
-                            console.error('Download failed:', error);
-                            showNotification('Download failed. Opening video in new tab...', 'warning');
-                            window.open(data.download_url, '_blank');
-                        });
-                } else {
-                    // Server download for audio
-                    showNotification(data.message || `${type} downloaded successfully!`, 'success');
+                setTimeout(() => {
+                    document.getElementById(progressId).remove();
                     
                     if (data.download_url) {
-                        const resultDiv = document.getElementById('resultContent');
                         const downloadBtn = document.createElement('a');
                         downloadBtn.href = data.download_url;
                         downloadBtn.textContent = `📥 Download ${data.filename}`;
-                        downloadBtn.className = 'inline-block mt-4 bg-green-500 text-white px-6 py-3 rounded-lg hover:bg-green-600 transition-colors font-semibold';
+                        downloadBtn.className = `inline-block mt-4 ${type === 'video' ? 'bg-blue-500 hover:bg-blue-600' : 'bg-green-500 hover:bg-green-600'} text-white px-6 py-3 rounded-lg transition-colors font-semibold`;
                         downloadBtn.style.textDecoration = 'none';
-                        
-                        if (resultDiv) {
-                            resultDiv.appendChild(downloadBtn);
-                        }
+                        resultDiv.appendChild(downloadBtn);
                     }
-                }
+                }, 1000);
             } else {
+                progressStatus.textContent = 'Failed';
+                progressBar.className = progressBar.className.replace('bg-blue-500', 'bg-red-500').replace('bg-green-500', 'bg-red-500');
                 showNotification(data.error || 'Download failed', 'error');
             }
         })
         .catch(error => {
-            hideLoading();
+            clearInterval(progressInterval);
+            progressStatus.textContent = 'Error';
+            progressBar.className = progressBar.className.replace('bg-blue-500', 'bg-red-500').replace('bg-green-500', 'bg-red-500');
             showNotification('Network error occurred', 'error');
-            console.error('Download error:', error);
         });
     };
 });
