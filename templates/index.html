@@ -270,12 +270,6 @@ document.addEventListener('DOMContentLoaded', function() {
                 <div class="grid md:grid-cols-2 gap-4">
                     <div class="bg-white dark:bg-gray-800 p-4 rounded-lg border dark:border-gray-600 transition-colors duration-300">
                         <h4 class="font-semibold text-gray-800 dark:text-white mb-3"><i class="fas fa-video mr-2 text-blue-500"></i>Video Quality (MP4)</h4>
-                        <select id="videoQuality" class="w-full p-2 border dark:border-gray-600 dark:bg-gray-700 dark:text-white rounded mb-3">
-                            <option value="">Select video quality</option>
-                            <option value="best">Best MP4</option>
-                            <option value="worst[height>=480]">Medium MP4</option>
-                            <option value="worst">Low MP4</option>
-                        </select>
                         <button onclick="downloadWithQuality('${url}', '${data.platform}', 'video')" class="w-full bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600 transition-colors">
                             <i class="fas fa-download mr-2"></i>Download Video
                         </button>
@@ -283,12 +277,6 @@ document.addEventListener('DOMContentLoaded', function() {
                     
                     <div class="bg-white dark:bg-gray-800 p-4 rounded-lg border dark:border-gray-600 transition-colors duration-300">
                         <h4 class="font-semibold text-gray-800 dark:text-white mb-3"><i class="fas fa-music mr-2 text-green-500"></i>Audio Quality (MP3)</h4>
-                        <select id="audioQuality" class="w-full p-2 border dark:border-gray-600 dark:bg-gray-700 dark:text-white rounded mb-3">
-                            <option value="">Select audio quality</option>
-                            <option value="bestaudio">Best MP3</option>
-                            <option value="bestaudio[abr>=96]">Medium MP3</option>
-                            <option value="worstaudio">Low MP3</option>
-                        </select>
                         <button onclick="downloadWithQuality('${url}', '${data.platform}', 'audio')" class="w-full bg-green-500 text-white px-4 py-2 rounded hover:bg-green-600 transition-colors">
                             <i class="fas fa-download mr-2"></i>Download Audio
                         </button>
@@ -302,13 +290,7 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 
     window.downloadWithQuality = function(url, platform, type) {
-        const formatSelect = type === 'video' ? document.getElementById('videoQuality') : document.getElementById('audioQuality');
-        const formatId = formatSelect.value;
-        
-        if (!formatId) {
-            showNotification('Please select a quality option', 'warning');
-            return;
-        }
+        const formatId = type === 'video' ? 'best' : 'bestaudio';
         
         showLoading(`Downloading ${type}...`);
         
