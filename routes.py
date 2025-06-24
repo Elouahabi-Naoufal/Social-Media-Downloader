@@ -200,18 +200,23 @@ def youtube_proxy():
 
 @app.route('/download-file/<filename>')
 def download_file(filename):
-    """Serve downloaded file"""
-    try:
-        file_path = os.path.join('downloads', filename)
-        if os.path.exists(file_path):
-            return send_file(file_path, as_attachment=True)
-        else:
-            flash('File not found or has been cleaned up', 'error')
-            return redirect(url_for('index'))
-    except Exception as e:
-        app.logger.error(f"File download error: {str(e)}")
-        flash('Error downloading file', 'error')
-        return redirect(url_for('index'))
+    """Serve downloaded file and delete after 45 seconds"""
+    file_path = os.path.join('downloads', filename)
+    if not os.path.exists(file_path):
+        return "File not found", 404
+    
+    def cleanup_after_delay():
+        try:
+            os.remove(file_path)
+            history_item = DownloadHistory.query.filter_by(filename=filename).first()
+            if history_item:
+                db.session.delete(history_item)
+                db.session.commit()
+        except Exception:
+            pass
+    
+    threading.Timer(20.0, cleanup_after_delay).start()
+    return send_file(file_path, as_attachment=True)
 
 @app.route('/delete-history/<int:item_id>', methods=['POST'])
 def delete_history_item(item_id):
