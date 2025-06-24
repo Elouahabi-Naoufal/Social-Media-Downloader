@@ -62,12 +62,13 @@ def validate_url(url):
             'tiktok.com', 'www.tiktok.com', 'vm.tiktok.com',
             'facebook.com', 'www.facebook.com', 'fb.watch',
             'twitter.com', 'www.twitter.com', 'x.com', 'www.x.com',
-            'youtube.com', 'www.youtube.com', 'youtu.be', 'm.youtube.com'
+            'youtube.com', 'www.youtube.com', 'youtu.be', 'm.youtube.com',
+            'reddit.com', 'www.reddit.com', 'old.reddit.com'
         ]
         
         domain = parsed.netloc.lower()
         if not any(supported_domain in domain for supported_domain in supported_domains):
-            return False, "URL must be from Instagram, TikTok, Facebook, Twitter/X, or YouTube"
+            return False, "URL must be from Instagram, TikTok, Facebook, Twitter/X, YouTube, or Reddit"
         
         return True, None
         
@@ -90,6 +91,9 @@ def detect_platform(url):
             return 'twitter'
         elif 'youtube.com' in domain or 'youtu.be' in domain:
             return 'youtube'
+        elif 'reddit.com' in domain:
+            return 'reddit'
+
         
         return None
         

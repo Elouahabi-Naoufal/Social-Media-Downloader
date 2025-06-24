@@ -215,7 +215,7 @@ def download_file(filename):
         except Exception:
             pass
     
-    threading.Timer(20.0, cleanup_after_delay).start()
+    threading.Timer(40.0, cleanup_after_delay).start()
     return send_file(file_path, as_attachment=True)
 
 @app.route('/delete-history/<int:item_id>', methods=['POST'])
