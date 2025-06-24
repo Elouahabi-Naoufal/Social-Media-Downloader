@@ -18,7 +18,8 @@ from utils import (
     DownloadHistory,
     Blog,
     Image,
-    LegalPage
+    LegalPage,
+    ContactMessage
 )
 from utils_direct import get_direct_download_url
 
@@ -289,6 +290,29 @@ def legal_detail(slug):
     """Legal page detail page"""
     legal_page = LegalPage.query.filter_by(slug=slug, published=True).first_or_404()
     return render_template('legal/detail.html', legal_page=legal_page)
+
+@app.route('/contact', methods=['GET', 'POST'])
+def contact():
+    """Contact us page"""
+    if request.method == 'POST':
+        name = request.form.get('name')
+        email = request.form.get('email')
+        message = request.form.get('message')
+        
+        if name and email and message:
+            contact_msg = ContactMessage(
+                name=name,
+                email=email,
+                message=message
+            )
+            db.session.add(contact_msg)
+            db.session.commit()
+            flash('Message sent successfully!', 'success')
+            return redirect(url_for('contact'))
+        else:
+            flash('Please fill in all fields.', 'error')
+    
+    return render_template('contact.html')
 
 @app.errorhandler(500)
 def internal_error(error):

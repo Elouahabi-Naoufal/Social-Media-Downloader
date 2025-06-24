@@ -5,7 +5,7 @@ from functools import wraps
 from flask import render_template, request, jsonify, session, redirect, url_for, flash
 from sqlalchemy import func, desc, and_
 from app import app, db
-from utils import DownloadHistory, Blog, Image, LegalPage, format_file_size
+from utils import DownloadHistory, Blog, Image, LegalPage, ContactMessage, format_file_size
 from app import db
 from flask import send_file
 import re
@@ -666,6 +666,37 @@ def serve_legal_thumbnail(legal_id):
         return response
     except Exception as e:
         return "Thumbnail not found", 404
+
+@app.route('/admin/messages')
+@admin_required
+def admin_messages():
+    """Admin messages management"""
+    messages = ContactMessage.query.order_by(desc(ContactMessage.created_at)).all()
+    return render_template('admin/messages.html', messages=messages)
+
+@app.route('/admin/api/mark-read/<int:message_id>', methods=['POST'])
+@admin_required
+def admin_mark_read(message_id):
+    """Mark message as read"""
+    try:
+        message = ContactMessage.query.get_or_404(message_id)
+        message.read = not message.read
+        db.session.commit()
+        return jsonify({'success': True, 'read': message.read})
+    except Exception as e:
+        return jsonify({'success': False, 'error': str(e)}), 500
+
+@app.route('/admin/api/delete-message/<int:message_id>', methods=['DELETE'])
+@admin_required
+def admin_delete_message(message_id):
+    """Delete message"""
+    try:
+        message = ContactMessage.query.get_or_404(message_id)
+        db.session.delete(message)
+        db.session.commit()
+        return jsonify({'success': True})
+    except Exception as e:
+        return jsonify({'success': False, 'error': str(e)}), 500
 
 @app.route('/admin/settings')
 @admin_required

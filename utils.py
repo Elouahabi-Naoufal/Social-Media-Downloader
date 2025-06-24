@@ -70,6 +70,17 @@ class LegalPage(db.Model):
     created_at = Column(DateTime, default=datetime.utcnow)
     updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
 
+class ContactMessage(db.Model):
+    """Model for contact messages"""
+    __tablename__ = 'contact_messages'
+    
+    id = Column(Integer, primary_key=True)
+    name = Column(String(100), nullable=False)
+    email = Column(String(200), nullable=False)
+    message = Column(db.Text, nullable=False)
+    read = Column(db.Boolean, default=False)
+    created_at = Column(DateTime, default=datetime.utcnow)
+
 def validate_url(url):
     """Validate if URL is properly formatted and accessible"""
     try:
