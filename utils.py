@@ -34,6 +34,8 @@ class Blog(db.Model):
     excerpt = Column(String(300))
     thumbnail_data = Column(db.LargeBinary)
     thumbnail_mime_type = Column(String(100))
+    thumbnail_style = Column(String(20), default='cover')
+    thumbnail_height = Column(Integer, default=192)
     published = Column(db.Boolean, default=False)
     created_at = Column(DateTime, default=datetime.utcnow)
     updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)

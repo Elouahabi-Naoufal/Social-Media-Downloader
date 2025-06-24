@@ -345,6 +345,9 @@ def admin_blog_new():
             thumbnail_data = thumbnail_file.read()
             thumbnail_mime_type = thumbnail_file.content_type
         
+        thumbnail_style = request.form.get('thumbnail_style', 'cover')
+        thumbnail_height = int(request.form.get('thumbnail_height', 192))
+        
         blog = Blog(
             title=title,
             slug=slug,
@@ -353,6 +356,8 @@ def admin_blog_new():
             excerpt=excerpt,
             thumbnail_data=thumbnail_data,
             thumbnail_mime_type=thumbnail_mime_type,
+            thumbnail_style=thumbnail_style,
+            thumbnail_height=thumbnail_height,
             published=published
         )
         db.session.add(blog)
@@ -384,6 +389,9 @@ def admin_blog_edit(blog_id):
         if thumbnail_file and thumbnail_file.filename and thumbnail_file.content_type.startswith('image/'):
             blog.thumbnail_data = thumbnail_file.read()
             blog.thumbnail_mime_type = thumbnail_file.content_type
+        
+        blog.thumbnail_style = request.form.get('thumbnail_style', 'cover')
+        blog.thumbnail_height = int(request.form.get('thumbnail_height', 192))
         
         blog.published = bool(request.form.get('published'))
         blog.updated_at = datetime.utcnow()

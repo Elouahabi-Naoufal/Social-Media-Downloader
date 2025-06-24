@@ -41,10 +41,35 @@
             <input type="file" id="thumbnail" name="thumbnail" accept="image/*"
                    class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:border-blue-500 focus:ring-2 focus:ring-blue-200">
             <p class="text-sm text-gray-500 mt-1">Upload thumbnail image (JPG, PNG, WebP)</p>
+            
+            <!-- Thumbnail Style Options -->
+            <div class="mt-4 p-4 border border-gray-200 rounded-lg bg-gray-50">
+                <h4 class="text-sm font-medium text-gray-700 mb-3">Thumbnail Display Style</h4>
+                <div class="grid grid-cols-2 gap-4">
+                    <label class="flex items-center">
+                        <input type="radio" name="thumbnail_style" value="cover" {% if not blog or blog.thumbnail_style == 'cover' %}checked{% endif %} class="mr-2">
+                        <span class="text-sm">Cover (crop to fit)</span>
+                    </label>
+                    <label class="flex items-center">
+                        <input type="radio" name="thumbnail_style" value="contain" {% if blog and blog.thumbnail_style == 'contain' %}checked{% endif %} class="mr-2">
+                        <span class="text-sm">Contain (fit entire image)</span>
+                    </label>
+                </div>
+                
+                <div class="mt-3">
+                    <label class="block text-sm text-gray-600 mb-1">Height (pixels)</label>
+                    <input type="number" name="thumbnail_height" value="{% if blog and blog.thumbnail_height %}{{ blog.thumbnail_height }}{% else %}192{% endif %}" 
+                           min="100" max="500" class="w-24 px-2 py-1 border rounded text-sm">
+                </div>
+            </div>
+            
             {% if blog and blog.thumbnail_data %}
-            <div class="mt-2">
-                <img src="/blog-thumbnail/{{ blog.id }}" alt="Current thumbnail" class="w-32 h-24 object-cover rounded border">
-                <p class="text-xs text-gray-500 mt-1">Current thumbnail</p>
+            <div class="mt-4">
+                <p class="text-sm font-medium text-gray-700 mb-2">Preview:</p>
+                <div class="border rounded-lg overflow-hidden" style="height: {{ blog.thumbnail_height or 192 }}px; width: 300px;">
+                    <img src="/blog-thumbnail/{{ blog.id }}" alt="Current thumbnail" 
+                         class="w-full h-full object-{{ blog.thumbnail_style or 'cover' }}">
+                </div>
             </div>
             {% endif %}
         </div>
