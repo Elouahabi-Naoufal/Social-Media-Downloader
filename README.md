@@ -1,729 +1,548 @@
-# Social Media Downloader
+<!-- Improved compatibility of back to top link: See: https://github.com/othneildrew/Best-README-Template/pull/73 -->
+<a id="readme-top"></a>
 
-A powerful web application for downloading media content from popular social media platforms including Instagram, TikTok, Facebook, Twitter/X, YouTube, and Reddit.
 
-## 🚀 Features
 
-### Core Functionality
-- **Multi-Platform Support**: Download from Instagram, TikTok, Facebook, Twitter/X, YouTube, and Reddit
-- **Multiple Quality Options**: Choose from Best, Medium, or Low quality for videos
-- **Audio Extraction**: Download audio-only versions of videos in MP3 format
-- **Direct Downloads**: Get direct download links for supported platforms
-- **Download History**: Track all your downloads with timestamps and file information
-- **Auto Cleanup**: Automatic cleanup of old files to save storage space
+<!-- PROJECT SHIELDS -->
+<!--
+*** I'm using markdown "reference style" links for readability.
+*** Reference links are enclosed in brackets [ ] instead of parentheses ( ).
+*** See the bottom of this document for the declaration of the reference variables
+*** for contributors-url, forks-url, etc. This is an optional, concise syntax you may use.
+*** https://www.markdownguide.org/basic-syntax/#reference-style-links
+-->
+[![Contributors][contributors-shield]][contributors-url]
+[![Forks][forks-shield]][forks-url]
+[![Stargazers][stars-shield]][stars-url]
+[![Issues][issues-shield]][issues-url]
+[![License][license-shield]][license-url]
+[![LinkedIn][linkedin-shield]][linkedin-url]
 
-### Admin Panel
-- **Dashboard**: Real-time statistics and analytics
-- **Download Management**: View, search, and manage all downloads
-- **Blog System**: Create and manage blog posts with markdown support
-- **Legal Pages**: Manage privacy policy and terms of service
-- **Contact Messages**: Handle user inquiries
-- **System Settings**: Monitor storage usage and system health
 
-### Technical Features
-- **Responsive Design**: Works on desktop and mobile devices
-- **RESTful API**: JSON-based API for all operations
-- **Database Storage**: SQLite database for data persistence
-- **File Management**: Automatic file cleanup and storage optimization
-- **Security**: Admin authentication and session management
 
-## 🛠️ Technologies Used
+<!-- PROJECT LOGO -->
+<br />
+<div align="center">
+  <a href="https://github.com/Elouahabi-Naoufal/Social-Media-Downloader">
+    <h3 align="center">Social Media Downloader</h3>
+  </a>
 
-### Backend Technologies
-- **Python 3.11+** - Core programming language
-- **Flask 3.1.1** - Web framework for the application
-- **SQLAlchemy 2.0.41** - Database ORM for data management
-- **SQLite** - Default database (can be changed to PostgreSQL)
-- **yt-dlp 2025.5.22** - Media extraction and downloading engine
-- **FFmpeg** - Audio/video processing and conversion
-- **Gunicorn** - WSGI HTTP Server for production deployment
+  <p align="center">
+    A self-hosted Flask application that pulls media from Instagram, TikTok, Facebook,
+    Twitter/X, YouTube, and Reddit with yt-dlp, and exposes it through a small admin panel.
+    <br />
+    <a href="https://github.com/Elouahabi-Naoufal/Social-Media-Downloader"><strong>Explore the source »</strong></a>
+    <br />
+    <br />
+    <a href="https://github.com/Elouahabi-Naoufal/Social-Media-Downloader/blob/main/routes.py">Public routes</a>
+    &middot;
+    <a href="https://github.com/Elouahabi-Naoufal/Social-Media-Downloader/blob/main/admin.py">Admin routes</a>
+    &middot;
+    <a href="https://github.com/Elouahabi-Naoufal/Social-Media-Downloader/issues/new?labels=bug">Report Bug</a>
+    &middot;
+    <a href="https://github.com/Elouahabi-Naoufal/Social-Media-Downloader/issues/new?labels=enhancement">Request Feature</a>
+  </p>
+</div>
 
-### Frontend Technologies
-- **HTML5** - Markup structure
-- **CSS3** - Styling and responsive design
-- **JavaScript (Vanilla)** - Client-side interactivity
-- **Bootstrap-like responsive design** - Mobile-first approach
 
-### Additional Libraries
-- **Requests** - HTTP library for API calls
-- **Werkzeug** - WSGI utilities and security
-- **Mistune** - Markdown processing for blog content
-- **Email-validator** - Email validation utilities
 
-## 📋 System Requirements
+<!-- TABLE OF CONTENTS -->
+<details>
+  <summary>Table of Contents</summary>
+  <ol>
+    <li>
+      <a href="#about-the-project">About The Project</a>
+      <ul>
+        <li><a href="#how-downloads-work">How Downloads Work</a></li>
+        <li><a href="#file-retention">File Retention</a></li>
+        <li><a href="#known-issue-read-this-first">Known Issue: Read This First</a></li>
+        <li><a href="#built-with">Built With</a></li>
+      </ul>
+    </li>
+    <li>
+      <a href="#getting-started">Getting Started</a>
+      <ul>
+        <li><a href="#prerequisites">Prerequisites</a></li>
+        <li><a href="#installation">Installation</a></li>
+        <li><a href="#configuration">Configuration</a></li>
+      </ul>
+    </li>
+    <li>
+      <a href="#usage">Usage</a>
+      <ul>
+        <li><a href="#web-interface">Web Interface</a></li>
+        <li><a href="#api">API</a></li>
+        <li><a href="#running-in-production">Running in Production</a></li>
+      </ul>
+    </li>
+    <li><a href="#roadmap">Roadmap</a></li>
+    <li>
+      <a href="#contributing">Contributing</a>
+      <ul>
+        <li><a href="#top-contributors">Top contributors:</a></li>
+      </ul>
+    </li>
+    <li><a href="#license">License</a></li>
+    <li><a href="#contact">Contact</a></li>
+    <li><a href="#acknowledgments">Acknowledgments</a></li>
+  </ol>
+</details>
 
-### Minimum Requirements
-- **Operating System**: Linux, macOS, or Windows
-- **Python**: Version 3.11 or higher
-- **RAM**: 512MB minimum, 1GB recommended
-- **Storage**: 2GB free space (more for downloads)
-- **Network**: Stable internet connection
 
-### Required Software
-1. **Python 3.11+**
-   - Download from [python.org](https://www.python.org/downloads/)
-   - Verify installation: `python --version`
 
-2. **FFmpeg** (Essential for audio conversion)
-   - **Ubuntu/Debian**: `sudo apt update && sudo apt install ffmpeg`
-   - **CentOS/RHEL**: `sudo yum install ffmpeg` or `sudo dnf install ffmpeg`
-   - **macOS**: `brew install ffmpeg` (requires Homebrew)
-   - **Windows**: Download from [ffmpeg.org](https://ffmpeg.org/download.html) and add to PATH
-   - Verify installation: `ffmpeg -version`
+<!-- ABOUT THE PROJECT -->
+## About The Project
 
-3. **Git** (for cloning repository)
-   - Most systems have it pre-installed
-   - Download from [git-scm.com](https://git-scm.com/) if needed
+A Flask application that takes a social media URL, downloads the media server-side with
+`yt-dlp`, optionally converts it to MP3 with FFmpeg, and serves it back for one download before
+deleting it. Around that core there is a session-authenticated admin panel for download
+history, statistics, blog posts, legal pages, and contact messages.
 
-## 🚀 Installation Guide
+It is deliberately small — four Python modules, Jinja templates, and one vanilla JavaScript
+file. There is no build step, no bundler, and no frontend framework; `static/css/style.css`
+and `static/js/main.js` are served as-is. The only external process the app shells out to is
+`ffmpeg`.
 
-### Step 1: Prepare Your System
+The URL allowlist is explicit. `validate_url()` in `utils.py` parses the hostname and rejects
+anything outside `instagram.com`, `tiktok.com` / `vm.tiktok.com`, `facebook.com` / `fb.watch`,
+`twitter.com` / `x.com`, `youtube.com` / `youtu.be`, and `reddit.com`; `detect_platform()`
+maps the same hostnames to one of six platform keys.
 
-**Check Python Version:**
-```bash
-python --version  # Should be 3.11 or higher
-# If not available, try:
-python3 --version
+**Scope and responsibility.** This is an infrastructure project: the interesting part is the
+orchestration, the retention policy, and the admin surface. You are responsible for complying
+with the terms of service of whichever platform you point it at, and with the rights of the
+people whose content you download.
+
+<p align="right">(<a href="#readme-top">back to top</a>)</p>
+
+
+
+### How Downloads Work
+
+`POST /download` takes `{url, platform, format_id, type}` and branches on `format_id`:
+
+| Request | Path taken |
+| --- | --- |
+| `format_id` omitted | `download_media()` — single-pass `best[height<=720]/best`, filename derived from the cleaned title |
+| `format_id == "best"` and `type == "video"` | `download_media_with_format()` — `bestvideo[ext=mp4]+bestaudio[ext=m4a]` merged with FFmpeg into `mp4` |
+| `format_id` set and `type == "video"` | `get_direct_download_url()` — returns a direct link instead of downloading |
+| `type == "audio"` | `download_media_with_format()` downloads the best video, runs `ffmpeg -i in.mp4 -vn -ab 192k -ar 44100 out.mp3`, then deletes the intermediate video |
+
+Server-side downloads are written into `downloads/` and recorded in `download_history` with
+the URL, platform, filename, path, byte size, and media type. Direct downloads are not
+recorded — nothing touches the disk.
+
+`get_video_info()` (`POST /get-video-info`) does an `extract_info(..., download=False)` pass to
+return title, duration, an estimated size, and a thumbnail. Instagram thumbnails are fetched
+server-side into `static/thumbnails/` and served locally, because Instagram's CDN URLs do not
+render reliably in a browser `<img>`.
+
+The six quality options defined in `get_available_formats()` — `best`, `worst[height>=480]`,
+`worst` for video and `bestaudio`, `bestaudio[abr>=96]`, `worstaudio` for audio — are available
+to the API. Note that the bundled front end does not currently send `format_id`, so a download
+started from the UI takes the first row of that table.
+
+<p align="right">(<a href="#readme-top">back to top</a>)</p>
+
+
+
+### File Retention
+
+Two independent mechanisms, both deliberate:
+
+1. **Forty-second timer.** `GET /download-file/<filename>` schedules a `threading.Timer(40.0, …)`
+   that deletes the file *and* its `download_history` row once the response has been served.
+2. **Hourly sweeper.** A daemon thread started at import time in `routes.py` wakes every 3600
+   seconds, removes anything in `downloads/` older than 24 hours, and deletes the corresponding
+   history rows.
+
+`GET /history` shows the most recent 50 records. `POST /delete-history/<id>` removes a row and
+its file immediately. `POST /admin/api/cleanup` accepts `{"days": 7}` and returns how many
+files and records were removed and how much space was freed.
+
+<p align="right">(<a href="#readme-top">back to top</a>)</p>
+
+
+
+### Known Issue: Read This First
+
+`routes.py` line 24 does:
+
+```python
+from utils_direct import get_direct_download_url
 ```
 
-**Install FFmpeg:**
-```bash
-# Ubuntu/Debian
-sudo apt update
-sudo apt install ffmpeg
+There is no `utils_direct.py` in this repository, and no rule in `.gitignore` that would explain
+its absence. Because `app.py` runs `from routes import *` at module scope, the import fails
+before the app object is served and `python app.py` exits with `ModuleNotFoundError: No module
+named 'utils_direct'`.
 
-# macOS (with Homebrew)
-brew install ffmpeg
+This is the first thing to fix before anything else in this README will work. `get_direct_download_url`
+is used by the `format_id`-specified video branch of `/download`, and by the `/youtube-proxy`
+response shape. If you are pulling this down to run it, either restore the module or provide the
+function yourself:
 
-# Verify installation
-ffmpeg -version
+```python
+# utils_direct.py
+def get_direct_download_url(url, platform, format_id, download_type):
+    """Return {'success': False, 'error': 'not implemented'} to keep the app importable."""
+    return {'success': False, 'error': 'Direct downloads are not available'}
 ```
 
-### Step 2: Download the Application
+<p align="right">(<a href="#readme-top">back to top</a>)</p>
 
-**Option A: Clone with Git**
-```bash
-git clone <your-repository-url>
-cd SocialMediaDownloader
-```
 
-**Option B: Download ZIP**
-- Download the ZIP file from your repository
-- Extract to your desired location
-- Navigate to the extracted folder
 
-### Step 3: Set Up Python Environment
+### Built With
 
-**Create Virtual Environment:**
-```bash
-# Using venv (recommended)
-python -m venv env
+* [![Flask][Flask]][Flask-url]
+* [![Python][Python]][Python-url]
+* [![Jinja][Jinja]][Jinja-url]
+* ![![SQLAlchemy][SQLAlchemy]][SQLAlchemy-url]
+* [![SQLite][SQLite]][SQLite-url]
+* [![yt-dlp][yt-dlp]][yt-dlp-url]
+* [![FFmpeg][FFmpeg]][FFmpeg-url]
+* [![Gunicorn][Gunicorn]][Gunicorn-url]
+* ![![Mistune][Mistune]][Mistune-url]
 
-# On some systems, use python3
-python3 -m venv env
-```
+<p align="right">(<a href="#readme-top">back to top</a>)</p>
 
-**Activate Virtual Environment:**
-```bash
-# Linux/macOS
-source env/bin/activate
 
-# Windows Command Prompt
-env\Scripts\activate
 
-# Windows PowerShell
-env\Scripts\Activate.ps1
-```
+<!-- GETTING STARTED -->
+## Getting Started
 
-**Verify Activation:**
-Your terminal prompt should show `(env)` at the beginning.
+### Prerequisites
 
-### Step 4: Install Dependencies
+* Python 3.11+ (`pyproject.toml` sets `requires-python = ">=3.11"`)
+  ```sh
+  python3 --version
+  ```
+* FFmpeg — required for both video merging and MP3 conversion. The app shells out to `ffmpeg`
+  directly; there is no bundled binary.
+  ```sh
+  # Ubuntu / Debian
+  sudo apt update && sudo apt install ffmpeg
 
-**Upgrade pip first:**
-```bash
-pip install --upgrade pip
-```
+  # macOS
+  brew install ffmpeg
 
-**Install application dependencies:**
-```bash
-# Option 1: Using requirements.txt (recommended)
-pip install -r requirements.txt
+  # Windows
+  winget install Gyan.FFmpeg
+  ```
+  Verify with `ffmpeg -version`.
+* A writable `downloads/` directory and, for Instagram thumbnails, a writable
+  `static/thumbnails/` directory. Both are created on demand.
 
-# Option 2: Using pyproject.toml
-pip install -e .
-```
+### Installation
 
-**Verify Installation:**
-```bash
-pip list  # Should show all installed packages
-```
+1. Clone the repo
+   ```sh
+   git clone https://github.com/Elouahabi-Naoufal/Social-Media-Downloader.git
+   cd Social-Media-Downloader
+   ```
 
-### Step 5: Configure the Application
+2. Create a virtual environment
+   ```sh
+   python3 -m venv env
+   source env/bin/activate        # Windows: env\Scripts\activate
+   ```
 
-**Create Environment File (Optional but Recommended):**
-```bash
-# Create .env file
-touch .env  # Linux/macOS
-# On Windows, create the file manually
-```
+3. Install dependencies. `requirements.txt` and `pyproject.toml` both exist and are kept in
+   sync; `uv.lock` is committed, so `uv sync` also works if you prefer it.
+   ```sh
+   pip install --upgrade pip
+   pip install -r requirements.txt
 
-**Add Configuration to .env:**
-```bash
-# Admin Panel Credentials (CHANGE THESE!)
-ADMIN_USERNAME=your_admin_username
-ADMIN_PASSWORD=your_secure_password_123
+   # or, with uv
+   uv sync
+   ```
+   Note that `requirements.txt` and `pyproject.toml` are not identical: `pyproject.toml` also
+   declares the `social-media-downloader` package, which no module in this repository imports.
+   `requirements.txt` is the list that actually matches the code.
 
-# Session Security (CHANGE THIS!)
-SESSION_SECRET=your_random_secret_key_here
+4. Create the runtime directories
+   ```sh
+   mkdir -p downloads static/thumbnails
+   ```
 
-# Database Configuration
-DATABASE_URL=sqlite:///downloads.db
+5. Fix the missing module described in [Known Issue](#known-issue-read-this-first), then start
+   the app
+   ```sh
+   python app.py
+   ```
+   `app.py` calls `db.create_all()` at import time, so the SQLite file and its five tables are
+   created on the first successful start. The server binds `0.0.0.0:5000` with `debug=False`.
 
-# Application Environment
-FLASK_ENV=production
-```
+### Configuration
 
-**Set Permissions (Linux/macOS):**
-```bash
-chmod 600 .env  # Restrict access to environment file
-mkdir -p downloads static/thumbnails instance
-```
+Four environment variables are read by the code. There is no `python-dotenv` dependency and
+nothing calls `load_dotenv()`, so a `.env` file on disk will **not** be picked up — either
+export them in the shell or source the file first.
 
-### Step 6: Initialize the Database
+| Variable | Read in | Default | Purpose |
+| --- | --- | --- | --- |
+| `SESSION_SECRET` | `app.py:18` | `dev-secret-key-change-in-production` | Flask session signing key |
+| `DATABASE_URL` | `app.py:22` | `sqlite:///downloads.db` | SQLAlchemy connection string |
+| `ADMIN_USERNAME` | `admin.py:17` | `admin` | Admin login username |
+| `ADMIN_PASSWORD` | `admin.py:18` | `admin123` | Admin login password |
 
-**Run the application once to create database:**
-```bash
+```sh
+export SESSION_SECRET="$(python3 -c 'import secrets; print(secrets.token_hex(32))')"
+export ADMIN_USERNAME="your-username"
+export ADMIN_PASSWORD="a-long-unique-password"
+export DATABASE_URL="sqlite:///instance/downloads.db"
+
 python app.py
 ```
 
-The application will:
-- Create the SQLite database automatically
-- Set up all required tables
-- Create necessary directories
-- Start the web server
+Or with a `.env` file and no extra dependency:
 
-**You should see:**
-```
-* Running on http://127.0.0.1:5000
-* Debug mode: off
-```
-
-## 🚀 Running the Application
-
-### Development Mode (Testing)
-```bash
-# Make sure virtual environment is activated
-source env/bin/activate  # Linux/macOS
-# or env\Scripts\activate  # Windows
-
-# Run the application
+```sh
+set -a; . ./.env; set +a
 python app.py
 ```
 
-**Access Points:**
-- **Main Application**: http://localhost:5000
-- **Admin Panel**: http://localhost:5000/admin
-- **Download History**: http://localhost:5000/history
-- **Blog**: http://localhost:5000/blog
+<p align="right">(<a href="#readme-top">back to top</a>)</p>
 
-### Production Mode (Live Server)
 
-**Using Gunicorn (Linux/macOS):**
-```bash
-# Basic production setup
-gunicorn -w 4 -b 0.0.0.0:5000 app:app
 
-# With more options
+<!-- USAGE EXAMPLES -->
+## Usage
+
+### Web Interface
+
+| Path | What it is |
+| --- | --- |
+| `/` | Download form — paste a URL, pick a platform or auto-detect |
+| `/history` | Last 50 downloads, with per-item delete |
+| `/blog`, `/blog/<slug>` | Blog, published posts only |
+| `/legal`, `/legal/<slug>` | Legal page index |
+| `/privacy`, `/terms` | Shortcuts to the `privacy-policy` and `terms-of-service` pages |
+| `/contact` | Contact form, stored as `contact_messages` rows |
+| `/admin/login` | Admin sign-in |
+| `/admin` | Dashboard — totals, per-platform counts, 7-day trend, recent activity |
+| `/admin/downloads` | Paginated history with platform filter and free-text search |
+| `/admin/analytics` | Hourly / day-of-week / monthly / per-platform breakdowns |
+| `/admin/blog`, `/admin/legal` | Markdown authoring with image upload and publish toggle |
+| `/admin/messages` | Contact submissions, with mark-read toggle |
+| `/admin/settings` | Storage usage and database record bounds |
+
+Admin routes are gated by an `@admin_required` decorator that checks `session['admin_logged_in']`
+and redirects to `/admin/login`.
+
+### API
+
+```sh
+# Validate a URL and detect the platform
+curl -X POST http://localhost:5000/validate-url \
+  -H 'Content-Type: application/json' \
+  -d '{"url": "https://www.instagram.com/p/example/"}'
+# {"valid": true, "platform": "instagram"}
+
+# Metadata without downloading
+curl -X POST http://localhost:5000/get-video-info \
+  -H 'Content-Type: application/json' \
+  -d '{"url": "https://www.instagram.com/p/example/"}'
+# {"success": true, "title": "...", "duration": "0:27", "thumbnail": "/static/thumbnails/thumb_xxxxxxxx.jpg",
+#  "platform": "instagram", "file_size": "4.7 MB"}
+
+# Download (server-side, best quality up to 720p)
+curl -X POST http://localhost:5000/download \
+  -H 'Content-Type: application/json' \
+  -d '{"url": "https://www.instagram.com/p/example/", "platform": "instagram"}'
+# {"success": true, "filename": "instagram_20250114_120530_Example_Post_ab12cd.mp4",
+#  "file_size": 4921088, "media_type": "video",
+#  "download_url": "/download-file/instagram_..._ab12cd.mp4", "message": "Video downloaded successfully!"}
+
+# Download and merge to the highest quality
+curl -X POST http://localhost:5000/download \
+  -H 'Content-Type: application/json' \
+  -d '{"url": "...", "platform": "youtube", "format_id": "best", "type": "video"}'
+
+# Extract audio as MP3 (192 kbps, 44.1 kHz)
+curl -X POST http://localhost:5000/download \
+  -H 'Content-Type: application/json' \
+  -d '{"url": "...", "platform": "youtube", "type": "audio"}'
+
+# Delete a history row and its file
+curl -X POST http://localhost:5000/delete-history/42
+```
+
+Admin JSON endpoints, all requiring a logged-in session:
+
+| Method | Path | Purpose |
+| --- | --- | --- |
+| `GET` | `/admin/api/stats` | Totals, storage size, 24-hour hourly activity |
+| `DELETE` | `/admin/api/delete-download/<id>` | Delete one download and its file |
+| `POST` | `/admin/api/cleanup` | `{"days": 7}` — purge files and records older than N days |
+| `POST` | `/admin/api/upload-image` | Store an image in the DB, return `/image/<uuid>.<ext>` |
+| `POST` | `/admin/api/toggle-blog/<id>` | Publish / unpublish a post |
+| `DELETE` | `/admin/api/delete-blog/<id>` | Delete a post |
+| `POST` | `/admin/api/toggle-legal/<id>` | Publish / unpublish a legal page |
+| `DELETE` | `/admin/api/delete-legal/<id>` | Delete a legal page |
+| `POST` | `/admin/api/mark-read/<id>` | Toggle read state on a message |
+| `DELETE` | `/admin/api/delete-message/<id>` | Delete a message |
+
+Data model: `download_history`, `blogs`, `images`, `legal_pages`, `contact_messages`. Blog and
+legal-page bodies are stored twice — `raw_content` keeps the original Markdown, `content` keeps
+the mistune-rendered HTML — so posts can be re-rendered or re-exported later. Thumbnails and
+uploaded images are `LargeBinary` columns served back through `/blog-thumbnail/<id>`,
+`/legal-thumbnail/<id>`, and `/image/<filename>` with a one-year `Cache-Control`.
+
+<p align="right">(<a href="#readme-top">back to top</a>)</p>
+
+
+
+### Running in Production
+
+`gunicorn` is already a dependency:
+
+```sh
 gunicorn -w 4 -b 0.0.0.0:5000 --timeout 120 --keep-alive 2 app:app
 ```
 
-**Using Waitress (Windows):**
-```bash
-pip install waitress
-waitress-serve --host=0.0.0.0 --port=5000 app:app
-```
-
-### First-Time Setup
-
-1. **Start the application**
-2. **Visit**: http://localhost:5000
-3. **Test a download** with any supported social media URL
-4. **Access admin panel**: http://localhost:5000/admin
-   - Default credentials: admin/admin123 (CHANGE THESE!)
-5. **Configure admin settings** and change passwords
-
-## 📖 Usage Guide
-
-### Basic Download Process
-
-1. **Visit the Homepage**: Navigate to `http://localhost:5000`
-2. **Enter URL**: Paste the social media URL in the input field
-3. **Select Quality**: Choose video quality (Best/Medium/Low) or audio-only
-4. **Download**: Click download and wait for processing
-5. **Get File**: Download the processed file or use the direct link
-
-### Supported URL Formats
-
-**Instagram:**
-- Posts: `https://www.instagram.com/p/[POST_ID]/`
-- Reels: `https://www.instagram.com/reel/[REEL_ID]/`
-
-**TikTok:**
-- Videos: `https://www.tiktok.com/@[USERNAME]/video/[VIDEO_ID]`
-- Short URLs: `https://vm.tiktok.com/[SHORT_ID]`
-
-**YouTube:**
-- Videos: `https://www.youtube.com/watch?v=[VIDEO_ID]`
-- Shorts: `https://www.youtube.com/shorts/[VIDEO_ID]`
-- Short URLs: `https://youtu.be/[VIDEO_ID]`
-
-**Twitter/X:**
-- Tweets: `https://twitter.com/[USERNAME]/status/[TWEET_ID]`
-- X URLs: `https://x.com/[USERNAME]/status/[TWEET_ID]`
-
-**Facebook:**
-- Videos: `https://www.facebook.com/[USERNAME]/videos/[VIDEO_ID]`
-- Watch URLs: `https://fb.watch/[VIDEO_ID]`
-
-**Reddit:**
-- Posts: `https://www.reddit.com/r/[SUBREDDIT]/comments/[POST_ID]/`
-
-### Download History
-
-- Access your download history at `/history`
-- View file details, download dates, and file sizes
-- Delete individual items from history
-- Files are automatically cleaned up after 24 hours
-
-## 🔧 Admin Panel
-
-### Accessing Admin Panel
-
-1. Navigate to `/admin/login`
-2. Enter admin credentials (default: admin/admin123)
-3. Access the dashboard at `/admin`
-
-### Admin Features
-
-#### Dashboard (`/admin`)
-- Total downloads statistics
-- Daily/weekly/monthly trends
-- Platform usage statistics
-- Recent download activity
-- Storage usage monitoring
-
-#### Downloads Management (`/admin/downloads`)
-- View all downloads with pagination
-- Filter by platform or search by URL/filename
-- Delete individual downloads
-- Bulk cleanup operations
-
-#### Blog Management (`/admin/blog`)
-- Create new blog posts with markdown
-- Upload and manage images
-- Set featured thumbnails
-- Publish/unpublish posts
-- SEO-friendly URLs
-
-#### Legal Pages (`/admin/legal`)
-- Manage Privacy Policy
-- Manage Terms of Service
-- Create additional legal pages
-- Markdown support with live preview
-
-#### Messages (`/admin/messages`)
-- View contact form submissions
-- Mark messages as read/unread
-- Delete messages
-- Respond to user inquiries
-
-#### Settings (`/admin/settings`)
-- System information
-- Storage usage statistics
-- Database statistics
-- Cleanup operations
-
-### Admin API Endpoints
-
-- `GET /admin/api/stats` - Real-time statistics
-- `DELETE /admin/api/delete-download/<id>` - Delete download
-- `POST /admin/api/cleanup` - Cleanup old files
-- `POST /admin/api/toggle-blog/<id>` - Toggle blog status
-- `POST /admin/api/upload-image` - Upload images
-
-## 🗂️ File Structure
-
-```
-SocialMediaDownloader/
-├── app.py              # Flask application setup
-├── routes.py           # Main application routes
-├── admin.py            # Admin panel routes
-├── utils.py            # Utility functions and models
-├── pyproject.toml      # Project dependencies
-├── downloads.db        # SQLite database
-├── downloads/          # Downloaded files (auto-cleanup)
-├── static/
-│   ├── css/           # Stylesheets
-│   ├── js/            # JavaScript files
-│   └── thumbnails/    # Video thumbnails
-├── templates/
-│   ├── admin/         # Admin panel templates
-│   ├── blog/          # Blog templates
-│   ├── legal/         # Legal page templates
-│   ├── base.html      # Base template
-│   ├── index.html     # Homepage
-│   ├── history.html   # Download history
-│   └── contact.html   # Contact form
-└── instance/
-    └── downloads.db   # Database instance
-```
-
-## 🔒 Security Considerations
-
-### Admin Security
-- Change default admin credentials immediately
-- Use strong passwords
-- Set secure session secrets
-- Enable HTTPS in production
-
-### File Security
-- Files are automatically cleaned up after 24 hours
-- Download directory is not web-accessible
-- File size limits prevent abuse
-
-### Database Security
-- SQLite database with proper permissions
-- SQL injection protection via SQLAlchemy ORM
-- Input validation on all forms
-
-## 🚀 Deployment
-
-### Using Gunicorn (Recommended)
-```bash
-gunicorn -w 4 -b 0.0.0.0:5000 app:app
-```
-
-### Using Docker
-```dockerfile
-FROM python:3.11-slim
-
-WORKDIR /app
-COPY . .
-
-RUN apt-get update && apt-get install -y ffmpeg
-RUN pip install -e .
-
-EXPOSE 5000
-CMD ["gunicorn", "-w", "4", "-b", "0.0.0.0:5000", "app:app"]
-```
-
-### Production Environment Setup
-
-**Create Production .env file:**
-```bash
-# Security Settings (CRITICAL - CHANGE ALL OF THESE!)
-ADMIN_USERNAME=your_secure_admin_username
-ADMIN_PASSWORD=your_very_secure_password_123!
-SESSION_SECRET=your_random_64_character_secret_key_here_change_this
-
-# Database (for production, consider PostgreSQL)
-DATABASE_URL=sqlite:///instance/downloads.db
-# For PostgreSQL: postgresql://user:password@localhost/dbname
-
-# Application Settings
-FLASK_ENV=production
-FLASK_DEBUG=False
-
-# Optional: External service configurations
-# SENTRY_DSN=your_sentry_dsn_for_error_tracking
-```
-
-**Set Environment Variables (Alternative to .env):**
-```bash
-export ADMIN_USERNAME="your_secure_admin"
-export ADMIN_PASSWORD="your_secure_password_123!"
-export SESSION_SECRET="your_64_char_secret_key"
-export DATABASE_URL="sqlite:///instance/downloads.db"
-export FLASK_ENV="production"
-```
-
-## 🔧 Troubleshooting
-
-### Installation Issues
-
-**Python Version Problems:**
-```bash
-# Check your Python version
-python --version
-python3 --version
-
-# If Python 3.11+ is not available:
-# Ubuntu/Debian: sudo apt install python3.11
-# macOS: brew install python@3.11
-# Windows: Download from python.org
-```
-
-**Virtual Environment Issues:**
-```bash
-# If venv module is missing:
-pip install virtualenv
-virtualenv env
-
-# Alternative virtual environment creation:
-python -m pip install virtualenv
-python -m virtualenv env
-```
-
-**FFmpeg Installation Problems:**
-```bash
-# Test FFmpeg installation
-ffmpeg -version
-
-# If command not found:
-# Ubuntu/Debian: sudo apt install ffmpeg
-# CentOS: sudo yum install epel-release && sudo yum install ffmpeg
-# macOS: brew install ffmpeg
-# Windows: Download from ffmpeg.org and add to PATH
-
-# Verify PATH (Windows)
-echo %PATH%
-# Verify PATH (Linux/macOS)
-echo $PATH
-```
-
-**Dependency Installation Failures:**
-```bash
-# Update pip first
-pip install --upgrade pip setuptools wheel
-
-# If specific packages fail:
-pip install --upgrade --force-reinstall package_name
-
-# For compilation errors (Linux):
-sudo apt install python3-dev build-essential
-
-# For macOS compilation errors:
-xcode-select --install
-```
-
-### Runtime Issues
-
-**Application Won't Start:**
-```bash
-# Check if virtual environment is activated
-which python  # Should point to env/bin/python
-
-# Check if all dependencies are installed
-pip list | grep flask
-pip list | grep yt-dlp
-
-# Run with verbose output
-python -v app.py
-```
-
-**Database Errors:**
-```bash
-# Check file permissions
-ls -la downloads.db
-ls -la instance/
-
-# Recreate database if corrupted
-rm downloads.db instance/downloads.db
-python app.py  # Will recreate automatically
-```
-
-**Download Failures:**
-```bash
-# Test yt-dlp directly
-yt-dlp --version
-yt-dlp "https://www.youtube.com/watch?v=test_url"
-
-# Check internet connectivity
-ping google.com
-curl -I https://www.instagram.com
-
-# Update yt-dlp
-pip install --upgrade yt-dlp
-```
-
-**FFmpeg Audio Conversion Issues:**
-```bash
-# Test FFmpeg directly
-ffmpeg -f lavfi -i testsrc2=duration=1:size=320x240:rate=1 test.mp4
-ffmpeg -i test.mp4 -vn -ab 192k test.mp3
-
-# Check FFmpeg codecs
-ffmpeg -codecs | grep mp3
-ffmpeg -codecs | grep aac
-```
-
-**Admin Panel Access Issues:**
-```bash
-# Check if admin credentials are set
-echo $ADMIN_USERNAME
-echo $ADMIN_PASSWORD
-
-# Clear browser cache and cookies
-# Try incognito/private browsing mode
-
-# Check session secret
-echo $SESSION_SECRET
-```
-
-**Port Already in Use:**
-```bash
-# Find what's using port 5000
-sudo lsof -i :5000  # Linux/macOS
-netstat -ano | findstr :5000  # Windows
-
-# Use different port
-python app.py --port 8000
-# Or modify app.py: app.run(port=8000)
-```
-
-### Performance Issues
-
-**Slow Downloads:**
-- Check internet connection speed
-- Some platforms have rate limiting
-- Try different quality settings
-- Update yt-dlp: `pip install --upgrade yt-dlp`
-
-**High Memory Usage:**
-- Reduce concurrent downloads
-- Clear old files regularly
-- Monitor disk space
-
-**Database Growing Too Large:**
-```bash
-# Clean up old records via admin panel
-# Or manually:
-sqlite3 downloads.db "DELETE FROM download_history WHERE created_at < datetime('now', '-30 days');"
-```
-
-### Platform-Specific Issues
-
-**Instagram Downloads Failing:**
-- Instagram frequently changes their API
-- Update yt-dlp: `pip install --upgrade yt-dlp`
-- Some private accounts may not work
-
-**YouTube Downloads Slow:**
-- YouTube has rate limiting
-- Try different quality options
-- Consider using direct download for better performance
-
-**TikTok Issues:**
-- TikTok URLs change format frequently
-- Ensure you're using the full URL, not shortened versions
-- Update yt-dlp regularly
-
-### Getting Help
-
-**Enable Debug Mode:**
-```python
-# In app.py, change:
-app.run(host='0.0.0.0', port=5000, debug=True)
-```
-
-**Check Logs:**
-```bash
-# Run with output logging
-python app.py > app.log 2>&1
-
-# Monitor logs in real-time
-tail -f app.log
-```
-
-**System Information for Support:**
-```bash
-# Gather system info for support requests
-python --version
-ffmpeg -version
-pip list | grep -E "flask|yt-dlp|sqlalchemy"
-uname -a  # Linux/macOS
-systeminfo  # Windows
-```
-
-**Common Error Messages:**
-
-- `ModuleNotFoundError: No module named 'flask'` → Virtual environment not activated or dependencies not installed
-- `FileNotFoundError: [Errno 2] No such file or directory: 'ffmpeg'` → FFmpeg not installed or not in PATH
-- `sqlite3.OperationalError: database is locked` → Database permission issues or multiple instances running
-- `yt_dlp.utils.DownloadError` → URL not supported or platform blocking downloads
-- `ConnectionError` → Internet connectivity issues
-
-For additional support, check the GitHub issues or create a new issue with:
-1. Your operating system
-2. Python version
-3. Error message (full traceback)
-4. Steps to reproduce the problem
-
-
-
-## 📝 API Documentation
-
-### Public Endpoints
-
-**POST /validate-url**
-```json
-{
-  "url": "https://www.instagram.com/p/example/"
-}
-```
-
-**POST /get-video-info**
-```json
-{
-  "url": "https://www.instagram.com/p/example/"
-}
-```
-
-**POST /download**
-```json
-{
-  "url": "https://www.instagram.com/p/example/",
-  "platform": "instagram",
-  "format_id": "best",
-  "type": "video"
-}
-```
-
-### Response Format
-```json
-{
-  "success": true,
-  "filename": "instagram_20240101_120000_example.mp4",
-  "file_size": 1048576,
-  "download_url": "/download-file/filename.mp4"
-}
-```
-
-## 🤝 Contributing
-
-1. Fork the repository
-2. Create a feature branch
-3. Make your changes
-4. Add tests if applicable
-5. Submit a pull request
-
-## 📄 License
-
-This project is licensed under the MIT License. See LICENSE file for details.
-
-## ⚠️ Disclaimer
-
-This tool is for educational and personal use only. Users are responsible for complying with the terms of service of the platforms they download content from. Respect copyright laws and content creators' rights.
-
-## 🆘 Support
-
-For support and questions:
-- Create an issue on GitHub
-- Use the contact form in the application
-- Check the troubleshooting section above
-
----
-
-**Version**: 1.0.0  
-**Last Updated**: January 2025
+`app.py` wraps the WSGI app in `werkzeug.middleware.proxy_fix.ProxyFix` for `X-Proto` and
+`X-Host`, so running behind a TLS-terminating reverse proxy works as long as the proxy sets
+those headers. Set the four environment variables from the table above before starting —
+in particular `SESSION_SECRET`, since the default is a fixed string that anyone reading the
+repository knows.
+
+<p align="right">(<a href="#readme-top">back to top</a>)</p>
+
+
+
+<!-- ROADMAP -->
+## Roadmap
+
+- [x] yt-dlp download pipeline with video, merged-best, and MP3 paths
+- [x] URL allowlist and platform detection for six platforms
+- [x] Download history with per-item delete and an hourly retention sweeper
+- [x] Admin panel: dashboard, download management, analytics, blog, legal pages, messages,
+      settings
+- [x] Markdown authoring with DB-backed images and thumbnails
+- [ ] **Restore or replace `utils_direct.py`.** Without it the app does not import. This blocks
+      everything else.
+- [ ] Hash the admin password. `hash_password()` and `verify_password()` are already written
+      with SHA-256 but are never called — `admin_login` compares `request.form['password']`
+      directly against the plaintext `ADMIN_PASSWORD` environment variable.
+- [ ] CSRF protection on the admin POST endpoints and the contact form. There is currently no
+      token on any of them.
+- [ ] Rate limiting on `/download` and `/youtube-proxy`, which both make outbound requests to
+      arbitrary platforms on behalf of an anonymous caller. `/youtube-proxy` in particular
+      fetches a caller-supplied `url` server-side.
+- [ ] Wire the quality selectors into the front end. `get_available_formats()` returns six
+      options, but `main.js` never sends `format_id`, so the direct-download and medium/low
+      branches are unreachable from the UI.
+- [ ] Decide on the `DATABASE_URL` story. `psycopg2-binary` is a dependency and the URL is
+      honoured, but the analytics queries use SQLite-specific `func.extract()` and
+      `func.strftime()`, so `/admin/analytics` will not work against PostgreSQL as written.
+- [ ] Add tests. There is no test directory or test runner configuration in the repository.
+- [ ] Add a `.env` loader, or document `set -a; . ./.env; set +a` everywhere, since a plain
+      `.env` file is silently ignored today.
+- [ ] Reconcile `pyproject.toml` with `requirements.txt` — the former declares a
+      `social-media-downloader` dependency that nothing in the code imports.
+
+See the [open issues](https://github.com/Elouahabi-Naoufal/Social-Media-Downloader/issues) for a full list of proposed features (and known issues).
+
+<p align="right">(<a href="#readme-top">back to top</a>)</p>
+
+
+
+<!-- CONTRIBUTING -->
+## Contributing
+
+Contributions are what make the open source community such an amazing place to learn, inspire, and create. Any contributions you make are **greatly appreciated**.
+
+If you have a suggestion that would make this better, please fork the repo and create a pull request. You can also simply open an issue with the tag "enhancement".
+Don't forget to give the project a star! Thanks again!
+
+1. Fork the Project
+2. Create your Feature Branch (`git checkout -b feature/AmazingFeature`)
+3. Commit your Changes (`git commit -m 'Add some AmazingFeature'`)
+4. Push to the Branch (`git push origin feature/AmazingFeature`)
+5. Open a Pull Request
+
+Before opening a pull request, set `SESSION_SECRET`, `ADMIN_USERNAME`, and `ADMIN_PASSWORD` and
+confirm `python app.py` starts cleanly. If you touch the download path, exercise at least one
+video and one audio conversion with FFmpeg on `PATH`.
+
+### Top contributors:
+
+<a href="https://github.com/Elouahabi-Naoufal/Social-Media-Downloader/graphs/contributors">
+  <img src="https://contrib.rocks/image?repo=Elouahabi-Naoufal/Social-Media-Downloader" alt="contrib.rocks image" />
+</a>
+
+<p align="right">(<a href="#readme-top">back to top</a>)</p>
+
+
+
+<!-- LICENSE -->
+## License
+
+No license file is currently bundled with this repository. Until one is added, the default GitHub
+terms apply and the repository should be treated as unlicensed — do not redistribute it without
+asking.
+
+<p align="right">(<a href="#readme-top">back to top</a>)</p>
+
+
+
+<!-- CONTACT -->
+## Contact
+
+Naoufal Elouahabi - [LinkedIn](https://www.linkedin.com/in/elouahabi-naoufal/) - elouahabi-naoufal1@gmail.com
+
+Project Link: [https://github.com/Elouahabi-Naoufal/Social-Media-Downloader](https://github.com/Elouahabi-Naoufal/Social-Media-Downloader)
+
+<p align="right">(<a href="#readme-top">back to top</a>)</p>
+
+
+
+<!-- ACKNOWLEDGMENTS -->
+## Acknowledgments
+
+* [yt-dlp](https://github.com/yt-dlp/yt-dlp) — all extraction and downloading.
+* [FFmpeg](https://ffmpeg.org) — stream merging and MP3 transcoding.
+* [Flask](https://flask.palletsprojects.com) and [Flask-SQLAlchemy](https://flask-sqlalchemy.palletsprojects.com)
+* [mistune](https://mistune.readthedocs.io) — Markdown rendering for blog and legal pages.
+* [Werkzeug](https://werkzeug.palletsprojects.com) — `ProxyFix` and `send_file`.
+* [Img Shields](https://shields.io)
+* [Choose an Open Source License](https://choosealicense.com)
+
+<p align="right">(<a href="#readme-top">back to top</a>)</p>
+
+
+
+<!-- MARKDOWN LINKS & IMAGES -->
+<!-- https://www.markdownguide.org/basic-syntax/#reference-style-links -->
+[contributors-shield]: https://img.shields.io/github/contributors/Elouahabi-Naoufal/Social-Media-Downloader.svg?style=for-the-badge
+[contributors-url]: https://github.com/Elouahabi-Naoufal/Social-Media-Downloader/graphs/contributors
+[forks-shield]: https://img.shields.io/github/forks/Elouahabi-Naoufal/Social-Media-Downloader.svg?style=for-the-badge
+[forks-url]: https://github.com/Elouahabi-Naoufal/Social-Media-Downloader/network/members
+[stars-shield]: https://img.shields.io/github/stars/Elouahabi-Naoufal/Social-Media-Downloader.svg?style=for-the-badge
+[stars-url]: https://github.com/Elouahabi-Naoufal/Social-Media-Downloader/stargazers
+[issues-shield]: https://img.shields.io/github/issues/Elouahabi-Naoufal/Social-Media-Downloader.svg?style=for-the-badge
+[issues-url]: https://github.com/Elouahabi-Naoufal/Social-Media-Downloader/issues
+[license-shield]: https://img.shields.io/github/license/Elouahabi-Naoufal/Social-Media-Downloader.svg?style=for-the-badge
+[license-url]: https://github.com/Elouahabi-Naoufal/Social-Media-Downloader
+[linkedin-shield]: https://img.shields.io/badge/-LinkedIn-black.svg?style=for-the-badge&logo=linkedin&colorB=555
+[linkedin-url]: https://www.linkedin.com/in/elouahabi-naoufal/
+[Flask]: https://img.shields.io/badge/Flask-000000?style=for-the-badge&logo=flask&logoColor=white
+[Flask-url]: https://flask.palletsprojects.com/
+[Python]: https://img.shields.io/badge/Python-3776AB?style=for-the-badge&logo=python&logoColor=white
+[Python-url]: https://www.python.org/
+[Jinja]: https://img.shields.io/badge/Jinja-B41717?style=for-the-badge&logo=jinja&logoColor=white
+[Jinja-url]: https://jinja.palletsprojects.com/
+[SQLAlchemy]: https://img.shields.io/badge/SQLAlchemy-D71F00?style=for-the-badge&logo=sqlalchemy&logoColor=white
+[SQLAlchemy-url]: https://www.sqlalchemy.org/
+[SQLite]: https://img.shields.io/badge/SQLite-003B57?style=for-the-badge&logo=sqlite&logoColor=white
+[SQLite-url]: https://www.sqlite.org/
+[yt-dlp]: https://img.shields.io/badge/yt--dlp-FF0000?style=for-the-badge&logo=youtube&logoColor=white
+[yt-dlp-url]: https://github.com/yt-dlp/yt-dlp
+[FFmpeg]: https://img.shields.io/badge/FFmpeg-007808?style=for-the-badge&logo=ffmpeg&logoColor=white
+[FFmpeg-url]: https://ffmpeg.org/
+[Gunicorn]: https://img.shields.io/badge/Gunicorn-499848?style=for-the-badge&logo=gunicorn&logoColor=white
+[Gunicorn-url]: https://gunicorn.org/
+[Mistune]: https://img.shields.io/badge/mistune-3776AB?style=for-the-badge
+[Mistune-url]: https://mistune.readthedocs.io/
